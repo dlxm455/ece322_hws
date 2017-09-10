@@ -1,7 +1,9 @@
 #include <sys/types.h> 
 #include <sys/stat.h> 
 #include <dirent.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define INIT_ARR_CAPACITY 10
 
@@ -22,20 +24,20 @@ struct vector_of_file_info {
 	struct file_info_struct * zero_pos_ptr;
 	int capacity;
 	int size;
-}
+};
 
-void vector_push_back(struct vector_of_file_info v, struct file_info_struct fis) {
+void vector_push_back(struct vector_of_file_info * v, struct file_info_struct fis) {
 	if (v->size >= v->capacity) {
 		v->capacity = v->capacity + v->capacity;
-		struct file_info_struct * new_arr = malloc(sizeof(* new_arr) * v->capacity);
+		struct file_info_struct * new_arr = (struct file_info_struct *)malloc(sizeof(* new_arr) * v->capacity);
 		for (int i = 0; i < v->size; i++) {
 			new_arr[i] = v->zero_pos_ptr[i];
-			free(v->zero_pos_ptr[i]);
 		}
+		free(v->zero_pos_ptr);
 		v->zero_pos_ptr = new_arr; 
 	}
 	v->zero_pos_ptr[v->size] = fis;
-	size += 1;
+	v->size += 1;
 }
 	
 /*
@@ -118,9 +120,9 @@ int main (int argc, char* argv[]) {
 	char path_buf[512]; /* Assume the absolute path will not exceed 512 bytes */	
 	struct file_info_struct my_struct;
 	struct vector_of_file_info my_vector;
-	my_vector->zero_pos_ptr = (struct vector_of_file_info *) malloc(sizeof(struct vector_of_file_info) * INIT_ARRAY_SIZE); 
-	my_vector->capacity = INIT_ARRAY_CAPACITY;
-	my_vector->size = 0;
+	my_vector.zero_pos_ptr = (struct file_info_struct *) malloc(sizeof(struct file_info_struct) * INIT_ARR_CAPACITY); 
+	my_vector.capacity = INIT_ARR_CAPACITY;
+	my_vector.size = 0;
 	while ((my_dirent = readdir(my_dir)) != NULL) {
 		sprintf(path_buf, "%s/%s", argv[optind], my_dirent->d_name);	
 		lstat(path_buf, &my_stat);
@@ -132,9 +134,9 @@ int main (int argc, char* argv[]) {
 		my_struct.my_st_uid = my_stat.st_uid;
 		my_struct.my_st_gid = my_stat.st_gid;
 		my_struct.my_st_size = my_stat.st_size;
-		my_struct.my_st_mtime = my_stat.my_st_mtimespec.st_mtime;
+		my_struct.my_st_mtime = my_stat.st_mtimespec.tv_sec;
 		
-		vector_push_back(my_vector, my_struct);
+		vector_push_back(&my_vector, my_struct);
 		
 	}
 	
@@ -143,4 +145,4 @@ int main (int argc, char* argv[]) {
 	 * Get the name and status for each file in the given directory 
 	 */
 	
-
+}
