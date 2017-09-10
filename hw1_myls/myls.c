@@ -3,7 +3,7 @@
 #include <dirent.h>
 #include <stdio.h>
 
-#define INIT_ARR_SIZE 10
+#define INIT_ARR_CAPACITY 10
 
 struct file_info_struct {
 	char * my_d_name;
@@ -18,6 +18,26 @@ struct file_info_struct {
 	time_t my_st_mtime;	
 };
 
+struct vector_of_file_info {
+	struct file_info_struct * zero_pos_ptr;
+	int capacity;
+	int size;
+}
+
+void vector_push_back(struct vector_of_file_info v, struct file_info_struct fis) {
+	if (v->size >= v->capacity) {
+		v->capacity = v->capacity + v->capacity;
+		struct file_info_struct * new_arr = malloc(sizeof(* new_arr) * v->capacity);
+		for (int i = 0; i < v->size; i++) {
+			new_arr[i] = v->zero_pos_ptr[i];
+			free(v->zero_pos_ptr[i]);
+		}
+		v->zero_pos_ptr = new_arr; 
+	}
+	v->zero_pos_ptr[v->size] = fis;
+	size += 1;
+}
+	
 /*
 void createArray (char * pathname, struct file_info_struct * struct_arr) {
 
@@ -79,8 +99,6 @@ int main (int argc, char* argv[]) {
 	 * Create array with init size
 	 */
 
-	struct file_info_struct * struct_array = malloc(INIT_ARR_SIZE * sizeof(*struct_array));
-	
 	/*
 	 * Directory entries 
 	 */
@@ -98,7 +116,11 @@ int main (int argc, char* argv[]) {
 	}
 
 	char path_buf[512]; /* Assume the absolute path will not exceed 512 bytes */	
-	struct file_info_struct my_struct; 
+	struct file_info_struct my_struct;
+	struct vector_of_file_info my_vector;
+	my_vector->zero_pos_ptr = (struct vector_of_file_info *) malloc(sizeof(struct vector_of_file_info) * INIT_ARRAY_SIZE); 
+	my_vector->capacity = INIT_ARRAY_CAPACITY;
+	my_vector->size = 0;
 	while ((my_dirent = readdir(my_dir)) != NULL) {
 		sprintf(path_buf, "%s/%s", argv[optind], my_dirent->d_name);	
 		lstat(path_buf, &my_stat);
@@ -112,11 +134,11 @@ int main (int argc, char* argv[]) {
 		my_struct.my_st_size = my_stat.st_size;
 		my_struct.my_st_mtime = my_stat.my_st_mtimespec.st_mtime;
 		
-		vector_push_back(struct_array, my_struct);
+		vector_push_back(my_vector, my_struct);
+		
 	}
 	
-
-				
+	
 	/*
 	 * Get the name and status for each file in the given directory 
 	 */
