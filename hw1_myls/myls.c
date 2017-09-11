@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define INIT_ARR_CAPACITY 10
 
@@ -40,24 +41,28 @@ void vector_push_back(struct vector_of_file_info * v, struct file_info_struct fi
 	v->size += 1;
 }
 
-void vector_sort(struct vector_of_file_info * v) {
-	
-}	
-/*
-void createArray (char * pathname, struct file_info_struct * struct_arr) {
-
-	DIR * my_DIR;
-	struct dirent * my_dirent;
-	struct stat * my_stat;
-	
-	my_DIR = opendir(pathname);
-	while ((my_dirent = readdir(my_DIR)) != NULL) {
-		printf("%s\n", my_dirent->d_name);
-		//stat(my_dirent->d_name, &myStat);
-	}
-	closedir(my_DIR);
+void vector_sort(struct vector_of_file_info * v, int l, int u) {
+	int i, j, k; struct file_info_struct pivot;
+	if (l < u - 1) {
+		i = l; j = u; pivot = v->zero_pos_ptr[l];
+		for (k = l + 1; k < j; ++k) {
+			while (strcmp(pivot.my_d_name, v->zero_pos_ptr[k].my_d_name) < 0) {
+				--j;
+				struct file_info_struct tmp = v->zero_pos_ptr[k];
+				v->zero_pos_ptr[k] = v->zero_pos_ptr[j];
+				v->zero_pos_ptr[j] = tmp;
+			}
+			if (strcmp(pivot.my_d_name, v->zero_pos_ptr[k].my_d_name) > 0) {
+				struct file_info_struct tmp = v->zero_pos_ptr[k];
+				v->zero_pos_ptr[k] = v->zero_pos_ptr[i];
+				v->zero_pos_ptr[i] = tmp;
+				++i;
+			}
+		vector_sort(v, l, i);
+		vector_sort(v, j, u);
+		}
+	}	
 }
-*/	
 
 int main (int argc, char* argv[]) {
 	/* 
@@ -158,7 +163,7 @@ int main (int argc, char* argv[]) {
 	}
 
 	else {
-		vector_sort(&my_vector);
+		vector_sort(&my_vector, 0, my_vector.size); // TODO: check paras
 		for (int i = 0; i < my_vector.size; i++) {
 			if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue;
 			if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i].my_d_name);
