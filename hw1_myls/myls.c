@@ -96,10 +96,6 @@ int main (int argc, char* argv[]) {
 		ecode = -1;
 		return ecode;
 	}
-	
-	/*
-	 * Create array with init size
-	 */
 
 	/*
 	 * Directory entries 
@@ -108,7 +104,7 @@ int main (int argc, char* argv[]) {
 	DIR * my_dir;
 	struct dirent * my_dirent;
 	struct stat my_stat;
-	
+		
 	my_dir = opendir(argv[optind]);
 
 	if (my_dir == NULL) {
@@ -116,7 +112,17 @@ int main (int argc, char* argv[]) {
 		ecode = -1;
 		return ecode;
 	}
-
+	
+	
+	if (!sflag && !lflag) ｛
+			while ((my_dirent = readdir(my_dir)) != NULL) {
+				if (!aflag && my_dirent->d_name[0] == '.') continue;
+				printf("%s\n", my_dirent->d_name);
+			}
+			closedir(my_dir);
+			return ecode;
+	} 
+		
 	char path_buf[512]; /* Assume the absolute path will not exceed 512 bytes */	
 	struct file_info_struct my_struct;
 	struct vector_of_file_info my_vector;
@@ -137,10 +143,23 @@ int main (int argc, char* argv[]) {
 		my_struct.my_st_mtime = my_stat.st_mtimespec.tv_sec;
 		
 		vector_push_back(&my_vector, my_struct);
-		
 	}
+	closedir(my_dir);
 	
-	
+	if (!sflag) {
+		while (int i = 0; i < my_vector.size(); i++) {
+			if (!aflag && my_vector.zero_pos_ptr[i]->my_d_name[0] == '.') continue;
+			printf(); //TODO	
+		}
+	return ecode;
+	}
+	else {
+		vector_sort(&my_vector);
+		while (int i = 0; i < my_vector.size(); i++) {
+			if (!aflag && my_vector.zero_pos_ptr[i]->my_d_name[0] == '.') continue;
+			if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i]->my_d_name);
+			else printf(); //TODO
+	}
 	/*
 	 * Get the name and status for each file in the given directory 
 	 */
