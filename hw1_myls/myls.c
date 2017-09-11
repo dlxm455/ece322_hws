@@ -39,7 +39,10 @@ void vector_push_back(struct vector_of_file_info * v, struct file_info_struct fi
 	v->zero_pos_ptr[v->size] = fis;
 	v->size += 1;
 }
+
+void vector_sort(struct vector_of_file_info * v) {
 	
+}	
 /*
 void createArray (char * pathname, struct file_info_struct * struct_arr) {
 
@@ -114,7 +117,7 @@ int main (int argc, char* argv[]) {
 	}
 	
 	
-	if (!sflag && !lflag) ｛
+	if (!sflag && !lflag) {
 			while ((my_dirent = readdir(my_dir)) != NULL) {
 				if (!aflag && my_dirent->d_name[0] == '.') continue;
 				printf("%s\n", my_dirent->d_name);
@@ -147,18 +150,20 @@ int main (int argc, char* argv[]) {
 	closedir(my_dir);
 	
 	if (!sflag) {
-		while (int i = 0; i < my_vector.size(); i++) {
-			if (!aflag && my_vector.zero_pos_ptr[i]->my_d_name[0] == '.') continue;
+		for (int i = 0; i < my_vector.size; i++) {
+			if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue;
 			printf(); //TODO	
 		}
 	return ecode;
 	}
+
 	else {
 		vector_sort(&my_vector);
-		while (int i = 0; i < my_vector.size(); i++) {
-			if (!aflag && my_vector.zero_pos_ptr[i]->my_d_name[0] == '.') continue;
-			if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i]->my_d_name);
+		for (int i = 0; i < my_vector.size; i++) {
+			if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue;
+			if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i].my_d_name);
 			else printf(); //TODO
+		}
 	}
 	/*
 	 * Get the name and status for each file in the given directory 
