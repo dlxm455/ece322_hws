@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pwd.h>
+#include <grp.h>
+#include <time.h>
 
 #define INIT_ARR_CAPACITY 10
 
@@ -62,6 +65,44 @@ void vector_sort(struct vector_of_file_info * v, int l, int u) {
 		vector_sort(v, j, u);
 		}
 	}	
+}
+
+void print_long_format(struct file_info_struct * fis) {
+	mode_t m = fis->my_st_mode;
+	printf((S_ISDIR(m)) ? "d" : "-");
+	printf((m & S_IRUSR) ? "r" : "-");
+	printf((m & S_IWUSR) ? "w" : "-");
+	printf((m & S_IXUSR) ? "x" : "-");
+	printf((m & S_IRGRP) ? "r" : "-");
+	printf((m & S_IWGRP) ? "w" : "-");
+	printf((m & S_IXGRP) ? "x" : "-");
+	printf((m & S_IROTH) ? "r" : "-");
+	printf((m & S_IWOTH) ? "w" : "-");
+	printf((m & S_IXOTH) ? "x" : "-");
+	printf("  ");
+	
+	printf("%d ", fis->my_st_nlink);
+	
+	struct passwd * pwd;
+	if ((pwd = getpwuid(fis->my_st_uid)) != NULL) 
+		printf("%8.8s", pwd->pw_name);
+	else 
+		printf("%8d", fis->my_st_uid);
+	
+	struct group *grp;
+	if ((grp = getgrgid(fis->my_st_gid)) != NULL)
+		printf("%8.8s", grp->gr_name);
+	else
+		printf("%8d", fis->my_st_gid);
+
+	printf("%8lld ", fis->my_st_size); // TODO: check format	
+	
+	printf("%s ", ctime(&fis->my_st_mtime));
+	
+	printf("%s", fis->my_d_name);
+	
+	printf("\n");
+
 }
 
 int main (int argc, char* argv[]) {
@@ -154,24 +195,11 @@ int main (int argc, char* argv[]) {
 	}
 	closedir(my_dir);
 	
-	if (!sflag) {
-		for (int i = 0; i < my_vector.size; i++) {
-			if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue;
-			printf(); //TODO	
-		}
-	return ecode;
+	if (sflag) vector_sort(&my_vector, 0, my_vector.size); // TODO: check paras
+	for (int i = 0; i < my_vector.size; i++) {
+		if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue;
+		if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i].my_d_name);
+		else print_long_format(&my_vector.zero_pos_ptr[i]);
 	}
 
-	else {
-		vector_sort(&my_vector, 0, my_vector.size); // TODO: check paras
-		for (int i = 0; i < my_vector.size; i++) {
-			if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue;
-			if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i].my_d_name);
-			else printf(); //TODO
-		}
-	}
-	/*
-	 * Get the name and status for each file in the given directory 
-	 */
-	
 }
