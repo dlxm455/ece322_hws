@@ -70,13 +70,14 @@ void vector_push_back(struct vector_of_file_info * v, struct file_info_struct fi
  */
 
 void vector_sort(struct vector_of_file_info * v, int first, int last) {
-	struct file_info_struct pivot, tmp;
-	int i, k;
 	if (first < last) {
+		struct file_info_struct pivot, tmp;
+		int i, k;
+
 		/* partition */
-		i = first + 1; pivot = v->zero_pos_ptr[first];
+		i = first; pivot = v->zero_pos_ptr[first];
 		for (k = first + 1; k <= last; ++k) {
-			if (strcmp(pivot.my_d_name, v->zero_pos_ptr[k].my_d_name) <= 0) {
+			if (strcmp(v->zero_pos_ptr[k].my_d_name, pivot.my_d_name) <= 0) {
 				++i; 
 				tmp = v->zero_pos_ptr[k];
 				v->zero_pos_ptr[k] = v->zero_pos_ptr[i];
@@ -219,7 +220,7 @@ int main (int argc, char* argv[]) {
 	}
 	closedir(my_dir);
 	
-	if (sflag || (!sflag && !Uflag)) vector_sort(&my_vector, 0, my_vector.size); // TODO: check paras
+	if (sflag || (!sflag && !Uflag)) vector_sort(&my_vector, 0, my_vector.size - 1);
 	for (int i = 0; i < my_vector.size; i++) {
 		if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue;
 		if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i].my_d_name);
