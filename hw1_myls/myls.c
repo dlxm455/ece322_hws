@@ -11,62 +11,86 @@
 
 #define INIT_ARR_CAPACITY 10
 
+/* 
+ * Struct to hold information from struct dirent and struct stat for long listing.
+ */
+
 struct file_info_struct {
-	char * my_d_name;
-	char * my_pathname;
+	char * my_d_name; // file or directory name
+	//char * my_pathname;
 	
-	mode_t my_st_mode; // file_mode;
-	nlink_t my_st_nlink; // num_links;
-	uid_t my_st_uid; // owner;
-	gid_t my_st_gid; // group;
-	off_t my_st_size; // num_bytes;
-	//struct timespec my_st_mtimespec;
-	time_t my_st_mtime;	
+	mode_t my_st_mode; // file mode including permission
+	nlink_t my_st_nlink; // number of hard links
+	uid_t my_st_uid; // owner id
+	gid_t my_st_gid; // group id
+	off_t my_st_size; // size in bytes
+	time_t my_st_mtime;	// modification time
 };
+
+
+
+
+/*
+ * Struct used to implement an expandable vector to hold the array of file_info_struct.
+ */
 
 struct vector_of_file_info {
-	struct file_info_struct * zero_pos_ptr;
-	int capacity;
-	int size;
+	struct file_info_struct * zero_pos_ptr; // pointer to the head of the array
+	int capacity; // how big the current allocated continuous space is
+	int size; // number of elements in the array
 };
 
+
+
+
+/*
+ * Add a file_info_struct to the vector.
+ */
+
 void vector_push_back(struct vector_of_file_info * v, struct file_info_struct fis) {
-	if (v->size >= v->capacity) {
-		v->capacity = v->capacity + v->capacity;
+	if (v->size >= v->capacity) { // if size exceeds capacity
+		v->capacity = v->capacity + v->capacity; // double the size of capacity
+        // allocate memory for new array with the new capacity
 		struct file_info_struct * new_arr = (struct file_info_struct *)malloc(sizeof(* new_arr) * v->capacity);
 		for (int i = 0; i < v->size; i++) {
-			new_arr[i] = v->zero_pos_ptr[i];
+			new_arr[i] = v->zero_pos_ptr[i]; // copy data from old array to new array
 		}
-		free(v->zero_pos_ptr);
-		v->zero_pos_ptr = new_arr; 
+		free(v->zero_pos_ptr); // free memory of old array
+		v->zero_pos_ptr = new_arr; // head pointer points to the new array
 	}
-	v->zero_pos_ptr[v->size] = fis;
-	v->size += 1;
+	v->zero_pos_ptr[v->size] = fis; // add the given struct to array
+	v->size += 1; // increase size by 1
 }
 
-void vector_sort(struct vector_of_file_info * v, int l, int u) {
-	int i, j, k; struct file_info_struct pivot;
-	if (l < u - 1) {
-		i = l; j = u; pivot = v->zero_pos_ptr[l];
-		for (k = l + 1; k < j; ++k) {
-			while (strcmp(pivot.my_d_name, v->zero_pos_ptr[k].my_d_name) < 0) {
-				--j;
-				struct file_info_struct tmp = v->zero_pos_ptr[k];
-				v->zero_pos_ptr[k] = v->zero_pos_ptr[j];
-				v->zero_pos_ptr[j] = tmp;
-			}
-			if (strcmp(pivot.my_d_name, v->zero_pos_ptr[k].my_d_name) > 0) {
-				struct file_info_struct tmp = v->zero_pos_ptr[k];
+
+
+
+/*
+ * Implement quicksort based on file (or directory) name of the file_info_struct array.
+ */
+
+void vector_sort(struct vector_of_file_info * v, int first, int last) {
+	struct file_info_struct pivot, tmp;
+	int i, k;
+	if (first < last) {
+		/* partition */
+		i = first + 1; pivot = v->zero_pos_ptr[first];
+		for (k = first + 1; k <= last; ++k) {
+			if (strcmp(pivot.my_d_name, v->zero_pos_ptr[k].my_d_name) <= 0) {
+				++i; 
+				tmp = v->zero_pos_ptr[k];
 				v->zero_pos_ptr[k] = v->zero_pos_ptr[i];
 				v->zero_pos_ptr[i] = tmp;
-				++i;
 			}
-		vector_sort(v, l, i);
-		vector_sort(v, j, u);
 		}
-	}	
-}
+		v->zero_pos_ptr[first] = v->zero_pos_ptr[i];
+		v->zero_pos_ptr[i] = pivot;
 
+		/* sort by recursion */
+		vector_sort(v, first, i - 1);
+		vector_sort(v, i + 1, last);
+	}
+}
 void print_long_format(struct file_info_struct * fis) {
 	mode_t m = fis->my_st_mode;
 	printf((S_ISDIR(m)) ? "d" : "-");
@@ -163,7 +187,7 @@ int main (int argc, char* argv[]) {
 	}
 	
 	
-	if (!sflag && !lflag) {
+	if (Uflag && !lflag) {
 			while ((my_dirent = readdir(my_dir)) != NULL) {
 				if (!aflag && my_dirent->d_name[0] == '.') continue;
 				printf("%s\n", my_dirent->d_name);
@@ -183,7 +207,7 @@ int main (int argc, char* argv[]) {
 		lstat(path_buf, &my_stat);
 		
 		my_struct.my_d_name = my_dirent->d_name;
-		my_struct.my_pathname = path_buf;
+		//my_struct.my_pathname = path_buf;
 		my_struct.my_st_mode = my_stat.st_mode;
 		my_struct.my_st_nlink = my_stat.st_nlink;
 		my_struct.my_st_uid = my_stat.st_uid;
@@ -195,7 +219,7 @@ int main (int argc, char* argv[]) {
 	}
 	closedir(my_dir);
 	
-	if (sflag) vector_sort(&my_vector, 0, my_vector.size); // TODO: check paras
+	if (sflag || (!sflag && !Uflag)) vector_sort(&my_vector, 0, my_vector.size); // TODO: check paras
 	for (int i = 0; i < my_vector.size; i++) {
 		if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue;
 		if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i].my_d_name);
