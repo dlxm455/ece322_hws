@@ -9,7 +9,7 @@
 #include <grp.h>
 #include <time.h>
 
-#define INIT_ARR_CAPACITY 10
+#define INIT_ARR_CAPACITY 20
 
 /* 
  * Struct to hold information from struct dirent and struct stat for long listing.
@@ -103,7 +103,7 @@ void print_long_format(struct file_info_struct * fis) {
 
 	mode_t m = fis->my_st_mode;
 	printf((S_ISDIR(m)) ? "d" : "-"); // directory or not
-	
+
 	/* permissions */
 	printf((m & S_IRUSR) ? "r" : "-");
 	printf((m & S_IWUSR) ? "w" : "-");
@@ -139,7 +139,7 @@ void print_long_format(struct file_info_struct * fis) {
 
 	/* file or directory name */
 	printf("%-s", fis->my_d_name);
-	
+
 	printf("\n");
 
 }
@@ -148,12 +148,10 @@ void print_long_format(struct file_info_struct * fis) {
 
 
 int main (int argc, char* argv[]) {
-	/* 
-	 * Parse option characters
-	 */
- 
 	int ecode = 0; /* to hold an error code, 0:success, -1:error */
 	
+	/* Parse option characters */
+
 	int opt, Uflag, sflag, lflag, aflag; /* the found option and 4 flags */
 
 	Uflag = 0; /* 0: not present, 1: present */
@@ -182,16 +180,20 @@ int main (int argc, char* argv[]) {
 		}
 	}
 
+
+
+	/* Condition 1: -U && -s */
+
 	if (Uflag && sflag) {
 		fprintf(stderr, "-U and -s are conflict options.\n");
 		ecode = -1;
 		return ecode;
 	}
 
-	/*
-	 * Directory entries 
-	 */
-		
+
+
+	/* Open directory entries */
+
 	DIR * my_dir;
 	struct dirent * my_dirent;
 	struct stat my_stat;
@@ -203,28 +205,39 @@ int main (int argc, char* argv[]) {
 		ecode = -1;
 		return ecode;
 	}
-	
-	
+
+
+
+	/* Condition 2: -U && no -l */
+
 	if (Uflag && !lflag) {
 			while ((my_dirent = readdir(my_dir)) != NULL) {
-				if (!aflag && my_dirent->d_name[0] == '.') continue;
+				if (!aflag && my_dirent->d_name[0] == '.') continue; // no -a option, skip name starting with '.'
 				printf("%s\n", my_dirent->d_name);
 			}
 			closedir(my_dir);
 			return ecode;
 	} 
-		
-	char path_buf[512]; /* Assume the absolute path will not exceed 512 bytes */	
+	
+
+
+
+	/* Condition 3: the rest */
+
+	char path_buf[512]; // Assume the absolute path will not exceed 512 bytes
 	struct file_info_struct my_struct;
 	struct vector_of_file_info my_vector;
+
+	// Allocate memory for expendable vector with initialization size
 	my_vector.zero_pos_ptr = (struct file_info_struct *) malloc(sizeof(struct file_info_struct) * INIT_ARR_CAPACITY); 
 	my_vector.capacity = INIT_ARR_CAPACITY;
 	my_vector.size = 0;
+
+	// Store information into each file_info_struct and push it to the vector
 	while ((my_dirent = readdir(my_dir)) != NULL) {
 		sprintf(path_buf, "%s/%s", argv[optind], my_dirent->d_name);	
 		lstat(path_buf, &my_stat);
 		strcpy(my_struct.my_d_name, my_dirent->d_name);
-		//my_struct.my_pathname = path_buf;
 		my_struct.my_st_mode = my_stat.st_mode;
 		my_struct.my_st_nlink = my_stat.st_nlink;
 		my_struct.my_st_uid = my_stat.st_uid;
@@ -236,11 +249,13 @@ int main (int argc, char* argv[]) {
 	}
 	closedir(my_dir);
 	
-	if (sflag || (!sflag && !Uflag)) vector_sort(&my_vector, 0, my_vector.size - 1);
+	if (!Uflag) vector_sort(&my_vector, 0, my_vector.size - 1); // -s or default (sort needed)
 	for (int i = 0; i < my_vector.size; i++) {
-		if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue;
-		if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i].my_d_name);
-		else print_long_format(&my_vector.zero_pos_ptr[i]);
+		if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue; // no -a option, skip element name starting with '.'
+		if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i].my_d_name); // no -l option, only print name
+		else print_long_format(&my_vector.zero_pos_ptr[i]); // -l option, print long listing
 	}
+
+	return ecode;
 
 }
