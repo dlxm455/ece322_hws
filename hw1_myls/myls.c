@@ -16,8 +16,7 @@
  */
 
 struct file_info_struct {
-	char * my_d_name; // file or directory name
-	//char * my_pathname;
+	char my_d_name[255 + 1]; // file or directory name
 	
 	mode_t my_st_mode; // file mode including permission
 	nlink_t my_st_nlink; // number of hard links
@@ -92,9 +91,20 @@ void vector_sort(struct vector_of_file_info * v, int first, int last) {
 		vector_sort(v, i + 1, last);
 	}
 }
+
+
+
+
+/*
+ * Print long listing format for given file_info_struct.
+ */
+
 void print_long_format(struct file_info_struct * fis) {
+
 	mode_t m = fis->my_st_mode;
-	printf((S_ISDIR(m)) ? "d" : "-");
+	printf((S_ISDIR(m)) ? "d" : "-"); // directory or not
+	
+	/* permissions */
 	printf((m & S_IRUSR) ? "r" : "-");
 	printf((m & S_IWUSR) ? "w" : "-");
 	printf((m & S_IXUSR) ? "x" : "-");
@@ -104,31 +114,38 @@ void print_long_format(struct file_info_struct * fis) {
 	printf((m & S_IROTH) ? "r" : "-");
 	printf((m & S_IWOTH) ? "w" : "-");
 	printf((m & S_IXOTH) ? "x" : "-");
-	printf("  ");
 	
-	printf("%d ", fis->my_st_nlink);
+	/* number of hard links */
+	printf("%3d ", fis->my_st_nlink);
 	
+	/* user name and group name */
 	struct passwd * pwd;
-	if ((pwd = getpwuid(fis->my_st_uid)) != NULL) 
-		printf("%8.8s", pwd->pw_name);
+	if ((pwd = getpwuid(fis->my_st_uid)) != NULL) // convert from user id to user name
+		printf("%-8s", pwd->pw_name);
 	else 
-		printf("%8d", fis->my_st_uid);
+		printf("%-8d", fis->my_st_uid);
 	
 	struct group *grp;
-	if ((grp = getgrgid(fis->my_st_gid)) != NULL)
-		printf("%8.8s", grp->gr_name);
+	if ((grp = getgrgid(fis->my_st_gid)) != NULL) // convert from group id to group name
+		printf("%-8s", grp->gr_name);
 	else
-		printf("%8d", fis->my_st_gid);
+		printf("%-8d", fis->my_st_gid);
 
-	printf("%8lld ", fis->my_st_size); // TODO: check format	
+	/* size */
+	printf("%6lld ", fis->my_st_size);
 	
+	/* modification time */
 	printf("%s ", ctime(&fis->my_st_mtime));
-	
-	printf("%s", fis->my_d_name);
+
+	/* file or directory name */
+	printf("%-s", fis->my_d_name);
 	
 	printf("\n");
 
 }
+
+
+
 
 int main (int argc, char* argv[]) {
 	/* 
@@ -206,8 +223,7 @@ int main (int argc, char* argv[]) {
 	while ((my_dirent = readdir(my_dir)) != NULL) {
 		sprintf(path_buf, "%s/%s", argv[optind], my_dirent->d_name);	
 		lstat(path_buf, &my_stat);
-		
-		my_struct.my_d_name = my_dirent->d_name;
+		strcpy(my_struct.my_d_name, my_dirent->d_name);
 		//my_struct.my_pathname = path_buf;
 		my_struct.my_st_mode = my_stat.st_mode;
 		my_struct.my_st_nlink = my_stat.st_nlink;
