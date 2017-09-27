@@ -257,7 +257,7 @@ int main (int argc, char* argv[]) {
 		if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i].my_d_name); // no -l option, only print name
 		else print_long_format(&my_vector.zero_pos_ptr[i]); // -l option, print long listing
 	}
-
+	free(my_vector.zero_pos_ptr); // free allocated memory
 	return ecode;
 
 }
