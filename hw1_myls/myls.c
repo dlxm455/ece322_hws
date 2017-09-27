@@ -51,7 +51,8 @@ void vector_push_back(struct vector_of_file_info * v, struct file_info_struct fi
 		v->capacity = v->capacity + v->capacity; // double the size of capacity
         // allocate memory for new array with the new capacity
 		struct file_info_struct * new_arr = (struct file_info_struct *)malloc(sizeof(* new_arr) * v->capacity);
-		for (int i = 0; i < v->size; i++) {
+		int i;
+		for (i = 0; i < v->size; ++i) {
 			new_arr[i] = v->zero_pos_ptr[i]; // copy data from old array to new array
 		}
 		free(v->zero_pos_ptr); // free memory of old array
@@ -250,7 +251,8 @@ int main (int argc, char* argv[]) {
 	closedir(my_dir);
 	
 	if (!Uflag) vector_sort(&my_vector, 0, my_vector.size - 1); // -s or default (sort needed)
-	for (int i = 0; i < my_vector.size; i++) {
+	int i;
+	for (i = 0; i < my_vector.size; ++i) {
 		if (!aflag && my_vector.zero_pos_ptr[i].my_d_name[0] == '.') continue; // no -a option, skip element name starting with '.'
 		if (!lflag) printf("%s\n", my_vector.zero_pos_ptr[i].my_d_name); // no -l option, only print name
 		else print_long_format(&my_vector.zero_pos_ptr[i]); // -l option, print long listing
