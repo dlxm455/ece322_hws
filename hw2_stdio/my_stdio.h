@@ -4,16 +4,18 @@
 struct FILE {
 	int fd;
 	int buf_size;
-	int * r_buf;
-	int * w_buf;
+	char * r_buf;
+	char * w_buf;
+	int r_pos;
+	int w_pos;
 	
 };
 
 FILE * fopen(char *);
 int fclose(FILE *);
 int fgetc(FILE *);
-int fputc(FILE *);
-int ungetc(FILE *);
+int fputc(FILE *, int);
+void ungetc(FILE *);
 int fflush(FILE *);
 
 
