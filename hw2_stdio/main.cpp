@@ -27,9 +27,28 @@ int readInt(FILE * file) {
 }
 
 void writeStr(FILE * file, char * string) {
-
+	int i = 0;
+	while (string[i] != '\0') {
+		fputc(file, (int)string[i]);
+	}
 }
 
-void writeInt(FILE * file, int interger) {
-
+void writeInt(FILE * file, int integer) {
+		//find out the number of digits in the integer
+		int digit_num = 1;
+		int i = 10;
+		while (integer >= i) {
+			i = i * 10;
+			digit_num += 1;
+		}
+		char * string = (char*)malloc(digit_num + 1);
+		string[digit_num] = '\0';
+		while (digit_num > 1) {
+			string[digit_num - 1] = integer % 10 + '0';
+			integer /= 10;
+			digit_num -= 1;
+		}
+		string[0] = integer;
+		writeStr(file, string);
+		free(string);
 }
