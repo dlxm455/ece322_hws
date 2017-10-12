@@ -24,48 +24,69 @@ int fclose(FILE * file) {
 	int res;
 	free(file->r_buf);
 	res = fflush(file); // returns 0 if OK, -1 on error
+	if (res < 0) {
+		printf("flush failed");
+		return res;
+	}
 	free(file->w_buf);
-	res += close(fd); // returns 0 if OK, -1 on error
-	return res;  // returns 0 if OK, -1 if fflush or close failed; -2 if both fail;
+	res = close(fd); // returns 0 if OK, -1 on error
+	return res;
 }
 
 int fgetc(FILE * file) {
-	int r_pos = file->r_pos;
-	int res; // TODO: eof
-		`
-	if (file->r_buf == NULL || r_pos == file->buf_size -1) {
-		if (file->r_buf == NULL)	
-			file->r_buf = (char*)malloc(file->buf_size);
-		res = read(file->fd, file->r_buf, sizeof(int);
-		if (res == 0) {
-			file->r_pos = 0;
-			return (int)file->r_buf[0];
-		}
-		else {
-			return EOF;
-		}
+	int res;
+	int buf_size = file->buf_size;
+
+	if (file->r_buf == NULL || file->r_pos == buf_size -1) {
+		if (file->r_buf == NULL)
+			file->r_buf = (char *)malloc(buf_size);
+
+		// fill the buffer
+		res = read(file->fd, file->r_buf, buf_size); // number of bytes read, 0:EOF, -1:error
+
+		if (res < 0)  // error 
+			return res;
+		else if (res < buf_size) // reach EOF
+			file->r_buf[res] = NULL; // mark EOF in read buffer
+		file->r_pos = -1; // reset read position
 	}
+
+	file->r_pos += 1; // increase read position by 1
+	char c = file->r_buf[file->r_pos]; // get character from the current read position
+
+	if (c == NULL) // EOF
+		return EOF;
+
+	return c; 
+}
 
 	file->r_pos += 1;
 	return file->r_buf[file->r_pos];
 
 }
 
-void fputc(FILE * file, int character) {
-	if (file->w_buf == NULL) 
+int fputc(FILE * file, int character) {
+	if (file->w_buf == NULL) // first time do fputc, no write buffer yet 
 		file->w_buf = (char *)malloc(file->buf_size);
+
+	// put one character in write buffer then check if buffer is full
 	char c = (char)character;
-	int res;
 	file->w_pos += 1;
-	w_pos = file->w_pos;
-	file->w_buf[w_pos] = c;	
-	if (w_pos == file->buf_size-1) {
-		res = write(file->fd, file->w_buf, file->buf_size);
-		if (res == -1) {
-			file->w_pos -= 1;
-			return -1;
+	file->w_buf[file->w_pos] = c;
+
+	int res;
+	int buf_size = file->buf_size;
+
+	if (w_pos == buf_size - 1) { // buffer is full
+		// dump the buffer content into the file
+		res = write(file->fd, file->w_buf, buf_size); // number of bytes written, -1: error
+		if (res < 0 || res < buf_size) { // error when writing to file
+			file->w_pos -= 1; // reset write position to previous position
+			return res;
 		}
+		file->w_pos = -1; // reset write position
 	}
+	
 	else 
 		return character;	
 
