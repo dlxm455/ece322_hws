@@ -10,6 +10,7 @@ FILE ** fopen(int pathname_count, char ** pathname_arr, int buf_size) {
 		FILE * file;
 		file->fd = open(pathname_arr[i], O_RDWR|O_CREAT, 0644); // 0 indicateds octal notation 
 		file->buf_size = buf_size;
+		file->read_return_size = buf_size;
 		file->r_buf = NULL;
 		file->w_buf = NULL;
 		file->r_pos = -1;
@@ -43,26 +44,20 @@ int fgetc(FILE * file) {
 
 		// fill the buffer
 		res = read(file->fd, file->r_buf, buf_size); // number of bytes read, 0:EOF, -1:error
-
+		file->read_return_size = res;
 		if (res < 0)  // error 
 			return res;
-		else if (res < buf_size) // reach EOF
-			file->r_buf[res] = NULL; // mark EOF in read buffer
+
 		file->r_pos = -1; // reset read position
 	}
 
 	file->r_pos += 1; // increase read position by 1
+	if (file->r_pos == read_return_size) { // reach EOF
+		return EOF;
+	}
 	char c = file->r_buf[file->r_pos]; // get character from the current read position
 
-	if (c == NULL) // EOF
-		return EOF;
-
 	return c; 
-}
-
-	file->r_pos += 1;
-	return file->r_buf[file->r_pos];
-
 }
 
 int fputc(FILE * file, int character) {
@@ -94,6 +89,9 @@ int fputc(FILE * file, int character) {
 
 void ungetc(FILE * file) {
 	file->r_pos -= 1;
+	// TODO`
+	// lseek current 0
+	// or offset in struct
 }
 
 int fflush(FILE * file) {

@@ -4,6 +4,7 @@
 struct FILE {
 	int fd;
 	int buf_size;
+	int read_return_size;
 	char * r_buf;
 	char * w_buf;
 	int r_pos;
