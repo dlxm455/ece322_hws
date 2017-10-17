@@ -9,14 +9,15 @@ struct FILE {
 	char * w_buf;
 	int r_pos;
 	int w_pos;
+	//int cur_offset;
 	
 };
 
-FILE * fopen(char *);
+FILE ** fopen(char **, int, int);
 int fclose(FILE *);
 int fgetc(FILE *);
-int fputc(FILE *, int);
-void ungetc(FILE *);
+int fputc(int, FILE *);
+int ungetc(int, FILE *);
 int fflush(FILE *);
 
 

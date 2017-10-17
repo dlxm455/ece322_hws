@@ -81,7 +81,7 @@ void writeStr(FILE * file, char * string) {
 		fputc(file, (int)string[i]);
 		i++;
 	}
-	fputc(file, 32); // add a white space
+	fputc(32, file); // add a white space
 	fflush(file); // flush the string to the file
 }
 
@@ -103,4 +103,7 @@ void writeInt(FILE * file, int integer) {
 		}
 		writeStr(file, string);
 		free(string);
+}
+
+int main() {
 }
