@@ -105,5 +105,21 @@ void writeInt(FILE * file, int integer) {
 		free(string);
 }
 
-int main() {
+int main(int argc, char * argv[]) {
+		FILE ** file_arr = fopen(&argv[1], argc - 1, 5);
+		// assume there are three files
+		FILE * file0 = file_arr[0];
+		fputc((int)('a'), file0);
+		fputc((int)('b'), file0);
+		fputc((int)('c'), file0);
+
+		FILE * file1 = file_arr[1];
+		char [] my_string = "abcdefghij";
+		writeStr(file1, my_string);	
+		
+		FILE * file2 = file_arr[2];
+		int integer = 123456; 
+
+		writeInt(file1, integer);
+
 }
