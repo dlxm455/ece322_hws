@@ -1,8 +1,5 @@
 #include "my_stdio.h"
 #include <stdlib.h>
-#include <stdio.h>
-
-
 
 #define init_capacity 100
 
@@ -11,10 +8,10 @@ char * readStr(FILE * file) {
 // if fgetc() returns error or EOF (<0) 
 // or first character is control character (1 to 32 or 127) or space(32) or nbsp(255), return NULL 
 	if (int_character < 33 || int_character == 127 || int_character == 255)
-		return NULL:
+		return NULL;
 	// malloc a space for the string with pre-defined init_capacity 
 	// if needs more space, malloc a new space twice the size. copy and delete the old one
-	init_capacity = init_capacity;
+	int capacity = init_capacity;
 	char * char_arr = (char *)malloc(capacity);
 	char * new_arr;
 	int i = 0;
@@ -24,7 +21,7 @@ char * readStr(FILE * file) {
 		if (i >= capacity) { // expand memory
 			new_arr = (char *)malloc(capacity * 2);
 			new_arr = memcpy(new_arr, char_arr, capacity);
-			free char_arr;
+			free(char_arr);
 			char_arr = new_arr;
 			new_arr = NULL;
 			capacity *= 2;
@@ -40,7 +37,7 @@ char * readStr(FILE * file) {
 	if (i == capacity) {
 		new_arr = (char *)malloc(capacity + 1);
 		new_arr = memcpy(new_arr, char_arr, capacity);
-		free char_arr;
+		free(char_arr);
 		char_arr = new_arr;
 		new_arr = NULL;
 	}
@@ -50,7 +47,7 @@ char * readStr(FILE * file) {
 	return char_arr;
 }
 
-int readInt(FILE * file) {
+int readInt(FILE * file, int * error) {
 	char* char_arr_integer = readStr(file);
 	int negative_flag = 0;
 	// find out number of digits and check if the string is a valid integer
@@ -63,7 +60,8 @@ int readInt(FILE * file) {
 
 	while (temp != '\0') {
 		if ((temp < '0' || temp > '9')) { // not a number
-			printf("Not an integer"); return INT_MAX; // return a big number to indicate error
+			*error = 1; // error handling
+			return -1;
 		}
 		num_digit += 1;
 		temp = char_arr_integer[num_digit];
