@@ -1,54 +1,41 @@
 #include "my_stdio.h"
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-#define init_capacity 100
 
-char * readStr(FILE * file) {
+int readStr(FILE * file, char * result) {
 	int int_character = fgetc(file);
 // if fgetc() returns error or EOF (<0) 
-// or first character is control character (1 to 32 or 127) or space(32) or nbsp(255), return NULL 
-	if (int_character < 33 || int_character == 127 || int_character == 255)
-		return NULL;
-	// malloc a space for the string with pre-defined init_capacity 
-	// if needs more space, malloc a new space twice the size. copy and delete the old one
-	int capacity = init_capacity;
-	char * char_arr = (char *)malloc(capacity);
-	char * new_arr;
-	int i = 0;
+	int count = 0;
 	
 	// check int_character is not control character (< 32 or 127) space(32), nbsp(255)
 	while (int_character >= 33 && int_character != 127 && int_character != 255) {
-		if (i >= capacity) { // expand memory
-			new_arr = (char *)malloc(capacity * 2);
-			new_arr = memcpy(new_arr, char_arr, capacity);
-			free(char_arr);
-			char_arr = new_arr;
-			new_arr = NULL;
-			capacity *= 2;
-		}
-		
 		int_character = fgetc(file);
-		char_arr[i] = (char)int_character;
+		count++;
+	}
+
+	result = (char *)malloc(count + 1);
+	lseek(file->fd, -count, SEEK_CUR);	
+	int i;
+	for (i = 0; i < count; i++) {
+		int_character = fgetc(file);
+		result[i] = (char)int_character;
 		i++;
 	}
 
-	// add '\0' at the end of arr 
-	// if no more space, malloc a new space with 1 more char size, copy and delete the old one
-	if (i == capacity) {
-		new_arr = (char *)malloc(capacity + 1);
-		new_arr = memcpy(new_arr, char_arr, capacity);
-		free(char_arr);
-		char_arr = new_arr;
-		new_arr = NULL;
-	}
-
-	char_arr[i] = '\0';
-	
-	return char_arr;
+	result[i] = '\0';
+	return 0;
 }
 
-int readInt(FILE * file, int * error) {
-	char* char_arr_integer = readStr(file);
+int readInt(FILE * file, int * result) {
+	char* char_arr_integer;
+	int ret = readStr(file, char_arr_integer);
+	if (ret == -1) {
+		if (char_arr_integer != NULL) free(char_arr_integer);
+		return -1;
+	}
+	
 	int negative_flag = 0;
 	// find out number of digits and check if the string is a valid integer
 	int num_digit = 0;
@@ -60,7 +47,6 @@ int readInt(FILE * file, int * error) {
 
 	while (temp != '\0') {
 		if ((temp < '0' || temp > '9')) { // not a number
-			*error = 1; // error handling
 			return -1;
 		}
 		num_digit += 1;
@@ -74,13 +60,16 @@ int readInt(FILE * file, int * error) {
 	}
 
 	if (negative_flag) res = - res;
-	return res;	
+	*result = res;
+
+	if (char_arr_integer != NULL) free(char_arr_integer);
+	return 0;
 }
 
 void writeStr(FILE * file, char * string) {
 	int i = 0;
 	while (string[i] != '\0') {
-		fputc(file, (int)string[i]);
+		fputc((int)string[i], file);
 		i++;
 	}
 	fputc(32, file); // add a white space
@@ -89,13 +78,19 @@ void writeStr(FILE * file, char * string) {
 
 void writeInt(FILE * file, int integer) {
 		//find out the number of digits in the integer
+		int neg_flag = 0;
+		if (integer < 0) {
+			neg_flag = 1;
+			integer = -integer;
+		}
 		int num_digit = 1;
 		int base = 10;
 		while (integer >= base ) {
 			base *= 10;
 			num_digit += 1;
 		}
-		char * string = (char*)malloc(digit_num + 1);
+		if (neg_flag) num_digit += 1;
+		char * string = (char*)malloc(num_digit + 1);
 		string[num_digit] = '\0'; // add '\0' at the end
 		int i = num_digit;
 		while (i >= 1) {
@@ -103,25 +98,48 @@ void writeInt(FILE * file, int integer) {
 			integer /= 10;
 			i--;
 		}
+		if (neg_flag) string[0] = '-';
 		writeStr(file, string);
 		free(string);
 }
 
 int main(int argc, char * argv[]) {
-		FILE ** file_arr = fopen(&argv[1], argc - 1, 5);
+		FILE * file1 = fopen("file1.txt", "w+", 5);
+		FILE * file2 = fopen("file2.txt", "w+", 5);
+		FILE * file3 = fopen("file3.txt", "w", 5);
 		// assume there are three files
-		FILE * file0 = file_arr[0];
-		fputc((int)('a'), file0);
-		fputc((int)('b'), file0);
-		fputc((int)('c'), file0);
+		fputc((int)('a'), file1);
+		fputc((int)('b'), file1);
+		fputc((int)('c'), file1);
+		fflush(file1);
+		lseek(file1->fd, 0, SEEK_SET);
 
-		FILE * file1 = file_arr[1];
-		char [] my_string = "abcdefghij";
-		writeStr(file1, my_string);	
+		fputc(fgetc(file1), file2);
+		fputc(fgetc(file1), file2);
 		
-		FILE * file2 = file_arr[2];
-		int integer = 123456; 
+		writeStr(file2, "hello");	
+		
+		lseek(file1->fd, 3, SEEK_SET);	
+		writeInt(file1, -123);
 
-		writeInt(file1, integer);
+		/*	
+		lseek(file1->fd, 3, SEEK_SET);
+		int x;
+		readInt(file1, &x);
+		writeInt(file3, x);
+		*/
+		
+		char * s = NULL;
+		lseek(file2->fd, 2, SEEK_SET);
+		readStr(file2, s);
+		writeStr(file3, s); 
+		
+		if (s) free(s);
+		
 
+		fclose(file1); //file1 should have abc-123
+		fclose(file2); //file2 should have abhello
+		fclose(file3); //file3 should have -123 hello 
+	
+		return 0;
 }

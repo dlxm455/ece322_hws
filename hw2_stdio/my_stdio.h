@@ -13,7 +13,8 @@ typedef struct FILE_struct {
 	
 } FILE;
 
-FILE ** fopen(char **, int, int);
+//FILE ** fopen(char **, int, int);
+FILE * fopen(char *, char *, int);
 int fclose(FILE *);
 int fgetc(FILE *);
 int fputc(int, FILE *);

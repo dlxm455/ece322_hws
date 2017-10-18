@@ -1,13 +1,16 @@
-# include "my_stdio.h"
-# include <fcnl.h>
-# include <unistd.h>
+#include "my_stdio.h"
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
 
 // Returns an array of FILE pointers associated with each given pathname.
 // Each FILE pointer points to a FILE struct if OK; the FILE pointer is NULL if error.
+/*
 FILE ** fopen(char ** pathname_arr, int pathname_count, int buf_size) {
 	FILE ** file_arr = (FILE **)malloc(pathname_count * sizeof(FILE *));
 	int i;
-	for (i = 0; i < pathname_count, i++) {	
+	for (i = 0; i < pathname_count; i++) {	
 		FILE * file = (FILE *)malloc(sizeof(FILE));
 		file->fd = open(pathname_arr[i], O_RDWR|O_CREAT|O_TRUNC, 0644); // 0 indicateds octal notation
 		if (file->fd == -1) {
@@ -25,6 +28,38 @@ FILE ** fopen(char ** pathname_arr, int pathname_count, int buf_size) {
 	}
 	return file_arr;
 }	
+*/
+
+// Returns: file pointer if OK, NULL on error
+FILE * fopen(char * pathname, char * type, int buf_size) {
+		FILE * file = (FILE *)malloc(sizeof(FILE));
+		if (strcmp(type, "r") == 0 || strcmp(type, "rb") == 0)
+			file->fd = open(pathname, O_RDONLY);
+		else if (strcmp(type, "w") == 0 || strcmp(type, "wb") == 0) 
+			file->fd = open(pathname, O_WRONLY|O_CREAT|O_TRUNC, 0644);
+		else if (strcmp(type, "a") == 0 || strcmp(type, "ab") == 0) 
+			file->fd = open(pathname, O_WRONLY|O_CREAT|O_APPEND, 0644);
+		else if (strcmp(type, "r+") == 0 || strcmp(type, "r+b") == 0 || strcmp(type, "rb+") == 0) 
+			file->fd = open(pathname, O_RDWR);
+		else if (strcmp(type, "w+") == 0 || strcmp(type, "w+b") == 0 || strcmp(type, "wb+") == 0)
+			file->fd = open(pathname, O_RDWR|O_CREAT|O_TRUNC, 0644);
+		else if (strcmp(type, "a+") == 0 || strcmp(type, "a+b") == 0 || strcmp(type, "ab+") == 0)
+			file->fd = open(pathname, O_RDWR|O_CREAT|O_APPEND, 0644);
+		else
+			return NULL;
+
+		if (file->fd == -1) 
+			return NULL;
+
+		file->buf_size = buf_size;
+		file->read_return_size = buf_size; // to detect EOF when reading 
+		file->r_buf = NULL;
+		file->w_buf = NULL;
+		file->r_pos = -1; // previous reading buffer position
+		file->w_pos = -1; // previous writing buffer position
+	
+	return file;
+}
 
 
 
@@ -36,7 +71,6 @@ int fclose(FILE * file) {
 	free(file->r_buf);
 	res = fflush(file); // returns 0 if OK, -1 on error
 	if (res < 0) {
-		printf("flush failed");
 		return res;
 	}
 	free(file->w_buf);
@@ -58,15 +92,14 @@ int fgetc(FILE * file) {
 		// fill the buffer
 		res = read(file->fd, file->r_buf, buf_size); // number of bytes read, 0:EOF, -1:error
 		file->read_return_size = res;
-		if (res == -1)  // error 
-			return res;
+		if (res == -1 || res == 0)  // error or EOF
+			return -1;
 
 		file->r_pos = -1; // reset read position
 	}
 
 	file->r_pos += 1; // increase read position by 1
-	if (file->r_pos == read_return_size) { // reach EOF
-		printf("Reach end of file.");
+	if (file->r_pos == file->read_return_size) { // reach EOF
 		return -1;
 	}
 	char c = file->r_buf[file->r_pos]; // get character
@@ -77,7 +110,7 @@ int fgetc(FILE * file) {
 
 
 // Returns: character put if OK, -1 on error 
-int fputc(FILE * file, int character) {
+int fputc(int character, FILE * file) {
 	if (file->w_buf == NULL) // first time do fputc, no write buffer yet 
 		file->w_buf = (char *)malloc(file->buf_size);
 
@@ -89,7 +122,7 @@ int fputc(FILE * file, int character) {
 	int res;
 	int buf_size = file->buf_size;
 
-	if (w_pos == buf_size - 1) { // buffer is full
+	if (file->w_pos == buf_size - 1) { // buffer is full
 		// dump the buffer content into the file
 		res = write(file->fd, file->w_buf, buf_size); // number of bytes written, -1: error
 		if (res == -1) { // error when writing to file
@@ -104,8 +137,7 @@ int fputc(FILE * file, int character) {
 			file->w_pos = -1; // reset write position
 	}
 	
-	else 
-		return character;	
+	return character;	
 
 }
 
@@ -114,19 +146,20 @@ int fputc(FILE * file, int character) {
 // Returns: character if OK, -1 on error
 int ungetc(int character, FILE * file) {
 	file->r_pos -= 1;
+	int buf_size = file->buf_size;
 	if (file->r_pos < -1) {
 		int curroffset = lseek(file->fd,0,SEEK_CUR);
-		if (curroffset <= file->buf_size) {
+		if (curroffset <= buf_size) {
 			return -1; // no more character to be unget
 		}
-		else if (curroffset < 2 * file->buf_size) {
+		else if (curroffset < 2 * buf_size) {
 			lseek(file->fd, 0, SEEK_SET);
-			read(file->fd, file->r_buf, curroffset - file->buf_size);
-			file->r_pos = curroffset - file->buf_size - 2;
+			read(file->fd, file->r_buf, curroffset - buf_size);
+			file->r_pos = curroffset - buf_size - 2;
 		} 
 		else {	
-			lseek(file->fd, - 2 * file->buf_size, SEEK_CUR);
-			read(file->fd, file->r_buf, file->buf_size);
+			lseek(file->fd, - 2 * buf_size, SEEK_CUR);
+			read(file->fd, file->r_buf, buf_size);
 			file->r_pos = buf_size - 2;
 		}
 	}
@@ -150,8 +183,8 @@ int fflush(FILE * file) {
 				file->w_pos = file->w_pos - res;
 				return -1;
 		}
-		else //res == file->w_pos + 1; all flushed
-			memset(w_buf, 0, file->buf_size);
+		else { //res == file->w_pos + 1; all flushed
+			memset(file->w_buf, 0, file->buf_size);
 			file->w_pos = -1;
 			res = 0; // flush OK 
 		}
