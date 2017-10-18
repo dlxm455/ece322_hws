@@ -1,9 +1,13 @@
 #include "my_stdio.h"
+#include <stdlib.h>
+#include <stdio.h>
+
+
+
 #define init_capacity 100
 
 char * readStr(FILE * file) {
 	int int_character = fgetc(file);
-	
 // if fgetc() returns error or EOF (<0) 
 // or first character is control character (1 to 32 or 127) or space(32) or nbsp(255), return NULL 
 	if (int_character < 33 || int_character == 127 || int_character == 255)
