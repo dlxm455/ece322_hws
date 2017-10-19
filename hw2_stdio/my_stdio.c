@@ -68,13 +68,16 @@ FILE * fopen(char * pathname, char * type, int buf_size) {
 int fclose(FILE * file) {
 	int fd = file->fd;
 	int res;
-	free(file->r_buf);
 	res = fflush(file); // returns 0 if OK, -1 on error
-	if (res < 0) {
+	if (res == -1) {
 		return res;
 	}
-	free(file->w_buf);
 	res = close(fd); // returns 0 if OK, -1 on error
+
+	// free memories
+	free(file->r_buf);
+	free(file->w_buf);
+	free(file);
 	return res;
 }
 
@@ -85,6 +88,7 @@ int fgetc(FILE * file) {
 	int res;
 	int buf_size = file->buf_size;
 
+	// When no read buffer or reaching the last position in read buffer
 	if (file->r_buf == NULL || file->r_pos == buf_size -1) {
 		if (file->r_buf == NULL)
 			file->r_buf = (char *)malloc(buf_size);
@@ -163,7 +167,7 @@ int ungetc(int character, FILE * file) {
 			file->r_pos = buf_size - 2;
 		}
 	}
-	if (character != -1)
+	if (character != -1) // if -1 is given, no character change
 		file->r_buf[file->r_pos + 1] = (char)character;
 
 	return file->r_buf[file->r_pos + 1];
@@ -171,7 +175,7 @@ int ungetc(int character, FILE * file) {
 
 
 
-// Flush unwritten data to the file, clean write buffer
+// Flush data written in buffer to the file, clean buffer
 // Returns: 0 if OK, -1 on error
 int fflush(FILE * file) {
 	int res = 0; // OK when flush without writing buffer set up
