@@ -163,9 +163,10 @@ int ungetc(int character, FILE * file) {
 			file->r_pos = buf_size - 2;
 		}
 	}
-	file->r_buf[file->r_pos + 1] = (char)character;
+	if (character != -1)
+		file->r_buf[file->r_pos + 1] = (char)character;
 
-	return character;
+	return file->r_buf[file->r_pos + 1];
 }
 
 
@@ -191,4 +192,5 @@ int fflush(FILE * file) {
 	}
 	return res;
 }
+
 	

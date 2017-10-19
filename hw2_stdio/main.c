@@ -4,65 +4,72 @@
 #include <unistd.h>
 
 
-int readStr(FILE * file, char * result) {
+int readStr(FILE * file, char ** result) {
 	int int_character = fgetc(file);
 // if fgetc() returns error or EOF (<0) 
-	int count = 0;
-	
+	int capacity = 100;
+	*result = (char *)malloc(capacity);
+	int i = 0;	
 	// check int_character is not control character (< 32 or 127) space(32), nbsp(255)
 	while (int_character >= 33 && int_character != 127 && int_character != 255) {
+		if (i == capacity - 1) {
+			capacity *= 2;
+			char * new_arr = (char *)malloc(capacity);
+			memcpy(new_arr, result, i);
+			free(result);
+			*result = new_arr;
+			new_arr = NULL;
+		}
+		*(*result+i) = (char)int_character;
 		int_character = fgetc(file);
-		count++;
-	}
-
-	result = (char *)malloc(count + 1);
-	lseek(file->fd, -count, SEEK_CUR);	
-	int i;
-	for (i = 0; i < count; i++) {
-		int_character = fgetc(file);
-		result[i] = (char)int_character;
 		i++;
 	}
 
-	result[i] = '\0';
+	*(*result+i) = '\0';
 	return 0;
 }
 
 int readInt(FILE * file, int * result) {
-	char* char_arr_integer;
-	int ret = readStr(file, char_arr_integer);
+	char * char_arr_integer = NULL;
+	
+	int ret = readStr(file, &char_arr_integer);
 	if (ret == -1) {
-		if (char_arr_integer != NULL) free(char_arr_integer);
+		if (char_arr_integer) free(char_arr_integer);
 		return -1;
 	}
 	
-	int negative_flag = 0;
+	int neg_flag = 0;
 	// find out number of digits and check if the string is a valid integer
-	int num_digit = 0;
+	int num_digit = 0, total_size = 0, i = 0;
 	char temp = char_arr_integer[0];
 	if (temp == '-') {
-		negative_flag = 1;
-		temp = char_arr_integer[1];
+		neg_flag = 1;
+		i = 1;
+		temp = *(char_arr_integer+i);
 	}
 
 	while (temp != '\0') {
 		if ((temp < '0' || temp > '9')) { // not a number
 			return -1;
 		}
-		num_digit += 1;
-		temp = char_arr_integer[num_digit];
+		num_digit++;
+		i++;
+		temp = *(char_arr_integer+i);
 	}
 
-	int i, res = 0, base = 1;
+	int res = 0, base = 1;
 	for (i = 0; i < num_digit; i++) {
-		res += (char_arr_integer[num_digit - 1 - i] - '0') * base;
+		if (neg_flag) 
+			res += (*(char_arr_integer+num_digit - i) - '0') * base;
+		else 
+			res += (*(char_arr_integer+num_digit - 1 - i) - '0') * base;
 		base *= 10;
 	}
 
-	if (negative_flag) res = - res;
+	if (neg_flag) res = - res;
 	*result = res;
 
-	if (char_arr_integer != NULL) free(char_arr_integer);
+	if (char_arr_integer) free(char_arr_integer);
 	return 0;
 }
 
@@ -116,29 +123,33 @@ int main(int argc, char * argv[]) {
 
 		fputc(fgetc(file1), file2);
 		fputc(fgetc(file1), file2);
+		ungetc(-1, file1);
+		ungetc((int)('z'), file1);
+		fputc(fgetc(file1), file2);
+		fputc(fgetc(file1), file2); 
 		
 		writeStr(file2, "hello");	
 		
 		lseek(file1->fd, 3, SEEK_SET);	
 		writeInt(file1, -123);
-
-		/*	
+		
+		fclose(file1);
+		file1 = fopen("file1.txt", "r", 5);
+		
 		lseek(file1->fd, 3, SEEK_SET);
 		int x;
 		readInt(file1, &x);
 		writeInt(file3, x);
-		*/
 		
 		char * s = NULL;
 		lseek(file2->fd, 2, SEEK_SET);
-		readStr(file2, s);
+		readStr(file2, &s);
 		writeStr(file3, s); 
 		
 		if (s) free(s);
-		
 
 		fclose(file1); //file1 should have abc-123
-		fclose(file2); //file2 should have abhello
+		fclose(file2); //file2 should have abzbhello
 		fclose(file3); //file3 should have -123 hello 
 	
 		return 0;
