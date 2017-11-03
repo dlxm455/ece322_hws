@@ -3,11 +3,11 @@
 #include <string.h>
 
 // read from stardard input; returns how many stirngs have been read
-int readInData(char **data, int num_str) {
+int readFileToArr(char **data, int arr_size) {
 	char str[128];
 	int count = 0;
 	int len;
-	while(count < num_str && scanf("%s", str)) {
+	while(count < arr_size && scanf("%s", str)) {
 		len = strlen(str);
 		data[count] = (char *)malloc(len+1); // leave one byte space for '\0'
 		strcpy(data[count], str);
@@ -16,10 +16,10 @@ int readInData(char **data, int num_str) {
 	return count;
 }
 
-int writeToFile(char ** data, char * fname, int num_str) {
+int writeArrToFile(char ** data, char * fname, int arr_size) {
 	FILE *outfile = fopen(fname, "w");
 	int i;
-	for (i = 0; i < num_str; i++) {
+	for (i = 0; i < arr_size; i++) {
 		fprintf(outfile, "%s\n", data[i]);
 		fflush(outfile);
 	}
@@ -35,15 +35,15 @@ int cmpfunc(const void *a, const void *b) {
 
 
 int main(int argc, char* argv[]) {
-	int num_string = atoi(argv[1]);
-	char ** data = (char **)malloc(sizeof(char *) * num_string);
-	int read_num_str = readInData(data, num_string);
-	qsort(data, read_num_str, sizeof(char*), cmpfunc);
-	writeToFile(data, argv[2], read_num_str);
+	int num = atoi(argv[1]);
+	char ** data = (char **)malloc(sizeof(char *) * num);
+	int read_num = readFileToArr(data, num);
+	qsort(data, read_num, sizeof(char*), cmpfunc);
+	writeArrToFile(data, argv[2], read_num);
 
 	// free memory
 	int i;
-	for (i = 0; i < num_string; i++) {
+	for (i = 0; i < num; i++) {
 		free(data[i]);
 	}
 	free(data);
