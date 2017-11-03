@@ -22,7 +22,6 @@ int writeArrToFile(char * ptr, int size, FILE * outfile) {
 		fprintf(outfile, "%s\n", ptr+i);
 		fflush(outfile);
 	}
-	fclose(outfile);
 	return i;
 } 
 
