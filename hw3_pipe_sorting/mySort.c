@@ -7,7 +7,7 @@ int readFileToArr(char **data, int arr_size) {
 	char str[128];
 	int count = 0;
 	int len;
-	while(count < arr_size && scanf("%s", str)) {
+	while((count < arr_size) && (scanf("%s", str) != EOF)) {
 		len = strlen(str);
 		data[count] = (char *)malloc(len+1); // leave one byte space for '\0'
 		strcpy(data[count], str);

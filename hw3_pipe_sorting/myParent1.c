@@ -30,9 +30,9 @@ int main(int argc, char * argv[]) {
 		char str[128]; // buffer to store scanf result
 		int count = 0;
 		int arg_num = atoi(argv[2]);
-		while (count < arg_num && scanf("%s", str) != EOF) {
+		while ((count < arg_num) && (scanf("%s", str) != EOF)) {
 			str[127] = '\0'; // for safe
-			fprintf(fp, "%s", str); // write to pipe
+			fprintf(fp, "%s\n", str); // write to pipe
 			fflush(fp); // flush to pipe 
 			count++;
 		}
@@ -41,7 +41,6 @@ int main(int argc, char * argv[]) {
 
 		pid_t p = wait(NULL); // wait for child 
 
-		exit(0); // exit
 	}
 
 	else { // child
