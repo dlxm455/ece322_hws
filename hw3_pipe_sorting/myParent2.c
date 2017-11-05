@@ -58,7 +58,7 @@ void child_behavior(int *fd, char * argv[], char suffix) {
 }
 
 int main(int argc, char * argv[]) {
-	// two pipes
+
 	int fd1[2];
 	pid_t pid1;
 

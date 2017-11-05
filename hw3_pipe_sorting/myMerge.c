@@ -37,7 +37,8 @@ int main(int argc, char*argv[]) {
 	
 	FILE * outfile = fopen(argv[3], "w");	
 
-	int i = 0, j = 0;
+	// merge two sorted arrays and write to the file directly
+    int i = 0, j = 0;
 	while (i < read_num1 || j < read_num2) {
 		if ( i == read_num1) {
 				writeDataToFile(data2[j], read_num2 - j, outfile);
