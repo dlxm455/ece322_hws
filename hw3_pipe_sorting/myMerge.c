@@ -16,7 +16,7 @@ int readFileToArr(char **data, int arr_size) {
 	return count;
 }
 
-int writeArrToFile(char * ptr, int size, FILE * outfile) {
+int writeDataToFile(char * ptr, int size, FILE * outfile) {
 	int i;
 	for (i = 0; i < size; i++) {
 		fprintf(outfile, "%s\n", ptr+i);
@@ -37,24 +37,25 @@ int main(int argc, char*argv[]) {
 	
 	FILE * outfile = fopen(argv[3], "w");	
 
-	int i = 0, j = 0;
+	// merge two sorted arrays and write to the file directly
+    int i = 0, j = 0;
 	while (i < read_num1 || j < read_num2) {
 		if ( i == read_num1) {
-				writeArrToFile(data2[j], read_num2 - j, outfile);
+				writeDataToFile(data2[j], read_num2 - j, outfile);
 				break;
 		}
 		else if (j == read_num2) {
-				writeArrToFile(data1[i], read_num1 - i, outfile);
+				writeDataToFile(data1[i], read_num1 - i, outfile);
 				break;
 		}
 			
 		int cmpRes = strcmp(data1[i], data2[j]);
 		if (cmpRes < 0) {
-			writeArrToFile(data1[i], 1, outfile);
+			writeDataToFile(data1[i], 1, outfile);
 			i++;
 		}
 		else {
-			writeArrToFile(data2[j], 1, outfile);
+        writeDataToFile(data2[j], 1, outfile);
 			j++;
 		}
 	}
