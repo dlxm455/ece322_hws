@@ -15,6 +15,7 @@ void parent_behavior(int * fd, char * num_str) {
 			str[127] = '\0'; // for safe
 			fprintf(fp, "%s\n", str); // write to pipe 
 			fflush(fp); // flush to pipe
+			count++;
 		}
 		fclose(fp); // close write end
 }
@@ -105,7 +106,6 @@ int main(int argc, char * argv[]) {
 			}
 			
 				
-		exit(0);
 		}
 
 		else { // child2

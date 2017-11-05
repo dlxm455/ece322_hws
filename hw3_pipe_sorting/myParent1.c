@@ -39,7 +39,7 @@ int main(int argc, char * argv[]) {
 
 		fclose(fp); // close write end
 
-		pid_t p = wait(NULL); // wait for child 
+		pid_t p = wait(NULL); // wait for child
 
 	}
 
