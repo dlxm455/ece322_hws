@@ -40,6 +40,7 @@ int main(int argc, char * argv[]) {
 		fclose(fp); // close write end
 
 		pid_t p = wait(NULL); // wait for child
+		exit(0);
 
 	}
 
@@ -78,7 +79,7 @@ int main(int argc, char * argv[]) {
 		exit(0);
 	}
 
-	exit(0);
+//	exit(0);
 }
 
 
