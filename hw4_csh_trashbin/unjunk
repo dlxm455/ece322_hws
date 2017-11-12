@@ -1,0 +1,40 @@
+#! /bin/csh
+
+if ( $#argv < 1 ) then
+	echo "Usage: $0 [-d restoreDir] pathname(s)"
+	exit 1
+endif
+
+set jf = ~/.junk
+
+if (! -e $jf) then
+	echo "$jf does not exist."
+	exit 1
+endif
+
+set restoreDir = .
+
+if ( $argv[1] =~ "-*" ) then
+	if ( $argv[1] != "-d" ) then
+		echo "Usage: $0 [-d restoreDir] pathname(s)"
+		exit 1
+	else
+		shift argv
+		if (! -e $argv[1] ) mkdir $argv[1]
+		set restoreDir = $argv[1]
+		shift argv
+	endif
+endif
+
+
+while ( $#argv )
+	set fullname = "$jf/$argv[1]" 
+		if (! -e $fullname ) then
+			echo "$fullname does not exist."
+		else
+			mv $fullname $restoreDir
+		endif
+	shift argv
+end
+
+			
