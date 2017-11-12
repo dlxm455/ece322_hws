@@ -1,0 +1,90 @@
+#!/bin/csh 
+
+set jf=~/.junk
+set fnum=0
+set list=()
+
+@ pflag = 0
+@ lflag = 0
+
+if ($#argv < 1) then
+	echo "usage: $0 -lp {pathname}"
+	exit 1
+endif
+
+if (! -d $jf) mkdir $jf;
+
+# -p or -l or -pl or lp or -p -l or -l -p
+switch ($argv[1])
+	case "-p":
+		@ pflag = 1
+		shift argv
+		if ( $#argv != 0) then
+			if ( $argv[1] == "-l" ) then
+				@lflag = 1
+				shift argv
+			endif	
+		endif
+		breaksw
+	case "-l":
+		@ lflag = 1
+		shift argv
+		if ( $#argv != 0 ) then
+			if ( $argv[1] == "-p" ) then
+				@pflag = 1
+				shift argv
+			endif
+		endif
+		breaksw
+	case "-lp":
+		@ pflag = 1
+		@ lflag = 1
+		shift argv
+		breaksw
+	case "-pl":
+		@ pflag = 1
+		@ lflag = 1
+		shift argv
+		breaksw
+	case "-*":
+		echo "Usage: $0 -lp {pathname}*"
+		exit(1)
+	default: 
+		breaksw
+endsw
+
+# move the list files to junk folder
+while ( $#argv )
+	if ( -e $argv[1] ) then
+		mv $argv[1] $jf
+	else
+		echo "$argv[1] does not exit"
+	endif
+	shift argv
+end
+
+if ( $lflag || $pflag ) then
+	set fnum=`ls $jf | wc -l`
+	if ( $fnum != 0 ) set list=($jf/*) 
+endif
+
+# list the files in junk folder 
+if ( $lflag == 1 ) then
+	if ( $fnum == 0 ) then
+		echo 'junk folder is empty'
+	else
+		foreach f ($list)
+			echo $f:t
+		end
+	endif
+endif
+
+# purge the files in junk folder
+if ( $pflag ) then
+	foreach f ($list)
+		if ( $pflag == 1) then
+			if ( -f $f ) rm $f
+			if ( -d $f ) rm -r $f
+		endif
+	end
+endif

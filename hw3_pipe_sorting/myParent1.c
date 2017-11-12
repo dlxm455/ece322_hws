@@ -38,8 +38,12 @@ int main(int argc, char * argv[]) {
 		}
 
 		fclose(fp); // close write end
-
+        
+        //fprintf(stdout, "child pid: %d\n", pid);
 		pid_t p = wait(NULL); // wait for child
+        
+       // fprintf(stdout, "wait pid: %d\n", p);
+        exit(0);
 
 	}
 
@@ -78,7 +82,7 @@ int main(int argc, char * argv[]) {
 		exit(0);
 	}
 
-	exit(0);
+	//exit(0);
 }
 
 
