@@ -1,0 +1,52 @@
+#! /bin/csh 
+
+# at least one argument needs to follow the program name
+if ( $#argv < 1 ) then
+	echo "Usage: $0 [-d restoreDir] pathname(s)"
+	exit 1
+endif
+
+
+# junk folder
+set jf = ~/.junk
+
+
+# if junk folder does not exist, notify user and exit
+if (! -e $jf) then
+	echo "$jf does not exist."
+	exit 1
+endif
+
+
+# if restoreDir is not set, use the current working dir
+set restoreDir = .
+
+
+# if option other than -d is given, notify user and exit
+# if -d is given, set restoreDir as the following argument 
+if ( "$argv[1]" =~ "-*" ) then
+	if ( "$argv[1]" != "-d" ) then
+		echo "Usage: $0 [-d restoreDir] pathname(s)"
+		exit 1
+	else
+		shift argv
+		if (! -e $argv[1] ) mkdir $argv[1]
+		set restoreDir = $argv[1]
+		shift argv
+	endif
+endif
+
+
+# move file/dir one by one from junk folder to restoreDir
+# if file/dir does not exist, notify the user 
+while ( $#argv )
+	set fullname = "$jf/$argv[1]" 
+		if (! -e $fullname ) then
+			echo "$argv[1] does not exist in junk folder."
+		else
+			mv $fullname $restoreDir
+		endif
+	shift argv
+end
+
+			

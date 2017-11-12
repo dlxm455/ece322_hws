@@ -38,9 +38,16 @@ int main(int argc, char * argv[]) {
 		}
 
 		fclose(fp); // close write end
-
+        
+        //fprintf(stdout, "child pid: %d\n", pid);
 		pid_t p = wait(NULL); // wait for child
+<<<<<<< HEAD/hw3_pipe_sorting/myParent1.c
 		exit(0);
+=======
+        
+       // fprintf(stdout, "wait pid: %d\n", p);
+        exit(0);
+>>>>>>> ebea9164bfcf001bbf7bb82b0980014ac75e78b5/hw3_pipe_sorting/myParent1.c
 
 	}
 
@@ -79,7 +86,11 @@ int main(int argc, char * argv[]) {
 		exit(0);
 	}
 
+<<<<<<< HEAD/hw3_pipe_sorting/myParent1.c
 //	exit(0);
+=======
+	//exit(0);
+>>>>>>> ebea9164bfcf001bbf7bb82b0980014ac75e78b5/hw3_pipe_sorting/myParent1.c
 }
 
 

@@ -1,0 +1,108 @@
+#!/bin/csh 
+
+# junk folder
+set jf=~/.junk
+
+# two flags for the options
+@ pflag = 0
+@ lflag = 0
+
+# need at least one argument following the program name 
+if ($#argv < 1) then
+	echo "usage: $0 -lp {pathname}"
+	exit 1
+endif
+
+
+# create junk folder if not exist
+if (! -d $jf) mkdir $jf;
+
+
+# find out what options are given in the arguments 
+switch ($argv[1])
+	case "-p":
+		@ pflag = 1
+		shift argv
+		if ( $#argv != 0) then
+			if ( $argv[1] == "-l" ) then
+				@lflag = 1
+				shift argv
+			endif	
+		endif
+		breaksw
+	case "-l":
+		@ lflag = 1
+		shift argv
+		if ( $#argv != 0 ) then
+			if ( $argv[1] == "-p" ) then
+				@pflag = 1
+				shift argv
+			endif
+		endif
+		breaksw
+	case "-lp":
+		@ pflag = 1
+		@ lflag = 1
+		shift argv
+		breaksw
+	case "-pl":
+		@ pflag = 1
+		@ lflag = 1
+		shift argv
+		breaksw
+	case "-*":
+		echo "Usage: $0 -lp {pathname}*"
+		exit(1)
+	default: 
+		breaksw
+endsw
+
+
+# move the given files/dirs to junk folder
+while ( $#argv )
+	if ( -e $argv[1] ) then
+		mv $argv[1] $jf
+	else
+		echo "$argv[1] does not exit"
+	endif
+	shift argv
+end 
+
+
+# number of files in junk folder  
+set fnum=0
+
+
+# array of all the files/dirs in junk folder
+set list=()
+
+
+# check if the junk folder is empty
+if ( $lflag || $pflag ) then
+	set fnum=`ls $jf | wc -l`
+	if ( $fnum ) then 
+		set list=($jf/*)
+	else
+		echo 'junk folder is empty'
+		exit 0
+	endif
+endif
+
+
+# list the files/dirs in junk folder 
+if ( $lflag ) then
+	foreach f ($list)
+		echo $f:t
+	end
+endif
+
+
+# purge the files/dirs in junk folder
+if ( $pflag ) then
+	foreach f ($list)
+		if ( $pflag ) then
+			if ( -f $f ) rm $f
+			if ( -d $f ) rm -r $f
+		endif
+	end
+endif
