@@ -13,7 +13,7 @@ set jf = ~/.junk
 
 # if junk folder does not exist, notify user and exit
 if (! -e $jf) then
-	echo "$jf does not exist."
+	echo "junk folder does not exist."
 	exit 1
 endif
 
