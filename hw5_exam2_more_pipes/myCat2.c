@@ -15,7 +15,10 @@ int main(int argc, char * argv[]) {
 	
 	// read until startline
 	while (line_count < start_line) {
-		fscanf(datafile, "%s", str);
+		if (fscanf(datafile, "%s", str) != 1) {
+			fprintf(stderr, "sort number too big\n");
+			exit(1);
+		}
 		line_count++;
 	}
 
@@ -25,7 +28,10 @@ int main(int argc, char * argv[]) {
 
 	// read and write from startline to endline
 	while (line_count <= end_line) {
-		fscanf(datafile, "%s", str);
+		if (fscanf(datafile, "%s", str) != 1) {
+			fprintf(stderr, "sort number too big\n");
+			exit(1);
+		}
 		printf("%s\n", str);
 		fflush(stdout);
 		line_count++;

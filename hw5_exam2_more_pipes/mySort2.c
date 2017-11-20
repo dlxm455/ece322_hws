@@ -37,7 +37,7 @@ int main() {
 	// read in number from stdin
 	int num;
 	if (scanf("%d", &num) != 1) {
-		fprintf(stderr, "read number fails in mySort2");
+		fprintf(stderr, "read number fails in mySort2\n");
 		exit(1);
 	}
 
@@ -47,7 +47,7 @@ int main() {
 	int read_num = read_stdin_to_arr(data, num);
 
 	if (read_num != num) { // check if all data have been read
-		fprintf(stderr, "not all data read in mySort2");
+		fprintf(stderr, "not all data are read in mySort2\n");
 		exit(1);
 	}
 
@@ -58,7 +58,7 @@ int main() {
 	int write_num = write_arr_to_stdout(data, num);
 	
 	if (write_num != num) { // check if all data have been written
-		fprintf(stderr, "not all data write in mySort2");
+		fprintf(stderr, "not all data are written in mySort2\n");
 		exit(1);
 	}
 

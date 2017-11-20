@@ -13,14 +13,16 @@ void find_progname(char * progname, char * pathname) {
 		
 int main() {
 
-char cat_fn[] = "./myCat2";
-char sort_fn[] = "./mySort2";
-char merge_fn[] = "./myMerge2";
-char format_fn[] = "./myFormat2";
-char data_fn[] = "../../data1.txt";
-int num_sort = 100000;
-fprintf(stderr, "size of int: %lu\n", sizeof(int));
 /*	
+	char cat_fn[] = "./myCat2";
+	char sort_fn[] = "./mySort2";
+	char merge_fn[] = "./myMerge2";
+	char format_fn[] = "./myFormat2";
+	//char data_fn[] = "/tmp/data1.txt";
+	char data_fn[] = "./testdata.txt";
+	int num_sort;
+*/
+	
 	char cat_fn[128];
 	char sort_fn[128];
 	char merge_fn[128];
@@ -65,7 +67,7 @@ fprintf(stderr, "size of int: %lu\n", sizeof(int));
 		exit(1);
 	}
 	
-	*/
+
 	// Create 5 pipes
 	int fd1[2], fd2[2], fd3[2], fd4[2], fd5[2];
 
