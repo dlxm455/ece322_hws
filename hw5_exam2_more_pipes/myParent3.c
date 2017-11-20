@@ -21,37 +21,37 @@ int main() {
 	int num_sort;
 
 
-	printf("%s", "The pathname of the splitting program:\n");
+	fprintf(stderr, "%s", "The pathname of the splitting program:\n");
 	if (scanf("%s", cat_fn) != 1) {
 		fprintf(stderr, "read fails.");
 		exit(1);
 	}
 
-	printf("%s", "The pathname of the sorting program:\n");
+	fprintf(stderr, "%s", "The pathname of the sorting program:\n");
 	if (scanf("%s", sort_fn) != 1) {
 		fprintf(stderr, "read fails.");
 		exit(1);
 	}
 
-	printf("%s", "The pathname of the merging program:\n");
+	fprintf(stderr, "%s", "The pathname of the merging program:\n");
 	if (scanf("%s", merge_fn) != 1) {
 		fprintf(stderr, "read fails.");
 		exit(1);
 	}
 
-	printf("%s", "The pathname of the formating program:\n");
+	fprintf(stderr, "%s", "The pathname of the formating program:\n");
 	if (scanf("%s", format_fn) != 1) {
 		fprintf(stderr, "read fails.");
 		exit(1);
 	}
 
-	printf("%s", "The pathname of the data file with the source data:\n" );
+	fprintf(stderr, "%s", "The pathname of the data file with the source data:\n" );
 	if (scanf("%s", data_fn) != 1) {
 		fprintf(stderr, "read fails.");
 		exit(1);
 	}
 
-	printf("%s", "The number of string to sort: ");
+	fprintf(stderr, "%s", "The number of string to sort: ");
 	if (scanf("%d", &num_sort) !=1) {
 		fprintf(stderr, "read fails.");
 		exit(1);
@@ -347,4 +347,5 @@ int main() {
 
 	exit(0);
 }
-	
+
+

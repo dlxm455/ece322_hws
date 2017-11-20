@@ -28,8 +28,11 @@ void read_stdin_to_arrs(char * data1[], int arr1_size, char * data2[], int arr2_
 			fprintf(stderr, "code is not 1 or 2\n");
 			exit(1);
 		}
-    }
-
+	}
+	fprintf(stderr, "count1: %d", count1);
+	fprintf(stderr, "count2: %d", count2);
+	fprintf(stderr, "arr1size: %d", arr1_size);
+	fprintf(stderr, "arr2size: %d", arr2_size);	
 	if (count1 != arr1_size || count2 != arr2_size) {
 		fprintf(stderr, "not all data are read to myMerge2\n");
 		exit(1);
@@ -91,3 +94,5 @@ int main (int argc, char * argv[]) {
 
 	return 0;
 }
+
+

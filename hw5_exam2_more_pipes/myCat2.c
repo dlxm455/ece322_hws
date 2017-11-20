@@ -34,9 +34,5 @@ int main(int argc, char * argv[]) {
     // close data file
 	fclose(datafile);
 }
-	
 
-	 
-	
-	
-	
+
