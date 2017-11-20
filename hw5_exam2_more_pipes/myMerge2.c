@@ -5,34 +5,34 @@
 // read data from stdin to internal array
 void read_stdin_to_arrs(char * data1[], int arr1_size, char * data2[], int arr2_size) {
 	char str[128];
-	int code;
+	char code[8];
 	int count1 = 0;
 	int count2 = 0;
 	int len;
 
-	while(((count1 < arr1_size) || (count2 < arr2_size)) && (scanf("%d %s", &code, str) == 2)) {
+	while(((count1 < arr1_size) || (count2 < arr2_size)) && (scanf("%s %s", code, str) == 2)) {
 		len = strlen(str);
-		if (code == 1) {
+		if (strcmp(code,"1") == 0) {
 			data1[count1] = (char *)malloc(len+1); // leave one byte space for '\0'
 			strcpy(data1[count1], str);
 			data1[count1][len] = '\0';
 			count1++;
-            
-		} else if (code == 2) {
+
+		} else if (strcmp(code, "2") == 0) {
 			data2[count2] = (char *)malloc(len+1); // leave one byte space for '\0'
 			strcpy(data2[count2], str);
 			data2[count2][len] = '\0';
 			count2++;
-            
+
 		} else { // code not 1 or 2
 			fprintf(stderr, "code is not 1 or 2\n");
+			fprintf(stderr, "code: %s\n", code);
+			fprintf(stderr, "string: %s\n", str);
+			
 			exit(1);
 		}
 	}
-	fprintf(stderr, "count1: %d", count1);
-	fprintf(stderr, "count2: %d", count2);
-	fprintf(stderr, "arr1size: %d", arr1_size);
-	fprintf(stderr, "arr2size: %d", arr2_size);	
+
 	if (count1 != arr1_size || count2 != arr2_size) {
 		fprintf(stderr, "not all data are read to myMerge2\n");
 		exit(1);
@@ -44,7 +44,7 @@ void write_arr_to_stdout(char ** start_ptr, int size) {
 	int i;
 	for (i = 0; i < size; i++) {
 		printf("%s\n", *(start_ptr + i));
-		//fflush(outfile);
+		fflush(stdout);
     }
 }
 

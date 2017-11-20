@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 int main(int argc, char * argv[]) {
-    
-    // get start line and end line indice from arguments
+
+	// get start line and end line indice from arguments
 	int start_line = strtol(argv[2], NULL, 10);
 	int end_line = strtol(argv[3], NULL, 10);
 
@@ -18,20 +18,20 @@ int main(int argc, char * argv[]) {
 		fscanf(datafile, "%s", str);
 		line_count++;
 	}
-    
+
 	// write the number of lines
 	printf("%d\n", end_line - start_line + 1);
-	//fflush(stdout);
-	
+	fflush(stdout);
+
 	// read and write from startline to endline
 	while (line_count <= end_line) {
 		fscanf(datafile, "%s", str);
 		printf("%s\n", str);
-		//fflush(stdout);
+		fflush(stdout);
 		line_count++;
 	}
 	
-    // close data file
+	// close data file
 	fclose(datafile);
 }
 
