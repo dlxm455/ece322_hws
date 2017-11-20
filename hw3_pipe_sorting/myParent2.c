@@ -105,7 +105,7 @@ int main(int argc, char * argv[]) {
 				pidw = wait(NULL);
 			}
 			
-				
+			exit(0);
 		}
 
 		else { // child2
@@ -118,7 +118,7 @@ int main(int argc, char * argv[]) {
 		child_behavior(fd1, argv, '1');
 	}
 
-	exit(0);
+	//exit(0);
 	
 }
 

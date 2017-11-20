@@ -7,19 +7,20 @@ int readFileToArr(char **data, int arr_size) {
 	int count = 0;
 	int len; // length for each string read from stdin
 
-	while (count < arr_size && scanf("%s", buf)) {
+	while (count < arr_size && scanf("%s", buf) == 1) {
 		len = strlen(buf);
 		data[count] = (char *)malloc(len+1); // leave one byte space for '\0'
 		strcpy(data[count], buf);
+        data[count][len] = '\0';
 		count++;
 	}
 	return count;
 }
 
-int writeDataToFile(char * ptr, int size, FILE * outfile) {
+int writeDataToFile(char ** start_ptr, int size, FILE * outfile) {
 	int i;
 	for (i = 0; i < size; i++) {
-		fprintf(outfile, "%s\n", ptr+i);
+		fprintf(outfile, "%s\n", *(start_ptr+i));
 		fflush(outfile);
 	}
 	return i;
@@ -41,21 +42,21 @@ int main(int argc, char*argv[]) {
     int i = 0, j = 0;
 	while (i < read_num1 || j < read_num2) {
 		if ( i == read_num1) {
-				writeDataToFile(data2[j], read_num2 - j, outfile);
+				writeDataToFile(data2+j, read_num2 - j, outfile);
 				break;
 		}
 		else if (j == read_num2) {
-				writeDataToFile(data1[i], read_num1 - i, outfile);
+				writeDataToFile(data1+i, read_num1 - i, outfile);
 				break;
 		}
 			
 		int cmpRes = strcmp(data1[i], data2[j]);
 		if (cmpRes < 0) {
-			writeDataToFile(data1[i], 1, outfile);
+			writeDataToFile(data1+i, 1, outfile);
 			i++;
 		}
 		else {
-        writeDataToFile(data2[j], 1, outfile);
+        writeDataToFile(data2+j, 1, outfile);
 			j++;
 		}
 	}
