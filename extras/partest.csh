@@ -65,6 +65,7 @@ set numeach=0
 # end: end line (initial value is $numeach
 ##############################################
 set flist=()
+set flist_copy=()
 set start=1
 set end=$numeach
 
@@ -76,6 +77,7 @@ while ($clevel)
 # set the temp filename and add to flist
 	set sfile="$tmploc/$sfileh$clevel$sfileext"
 	set flist = ($flist $sfile)
+	set flist_copy = ($flist_copy $sfile)
 
 # create and run the command
 	echo "/usr/bin/sed -n '$start,$end p' $dfile | $sprog $numeach $sfile"
@@ -106,32 +108,32 @@ if (-e $ofname && -f $ofname) /bin/rm $ofname
 # TODO: write the code for the simple merge
 ##############################################
 ##############################################
-#set numout=0
-#while ($#flist) 
-#	cat $ofname $flist[1] | $mprog $numout $numeach $ofname
-#	@ numout = $numout + $numeach
-#	shift flist
-#end
+echo "merge with simple merge method"
+set numout=0
+while ($#flist_copy) 
+	cat $ofname $flist_copy[1] | $mprog $numout $numeach $ofname
+	@ numout = $numout + $numeach
+	shift flist_copy
+end
  
 ##############################################
 ##############################################
 # TODO: write the code for the proper merge
 ##############################################
 ##############################################
-echo "merging with method2"
+echo "merge with proper merge method"
 set ofile2=sout2.txt322
 set ofname2=$tmploc/$ofile2
 if (-e $ofname2 && -f $ofname2) /bin/rm $ofname2
 
-while ($#flist > 1)
-	echo "flist number: $#flist"
+while ($#flist > 1) # loop until all files merge to one
 	set mfile="$flist[1]:r_$#flist$sfileext"
 	set flist=($flist $mfile)
-	set wc1list=`wc -l $flist[1]`
+	set wc1list=`wc -l $flist[1]` # count how many lines in the file
 	set num1=$wc1list[1]
-	set wc2list=`wc -l $flist[2]`
+	set wc2list=`wc -l $flist[2]` # count how many lines in the file
 	set num2=$wc2list[1]
-	echo "cat $flist[1] $flist[2] | $mprog $num1 $num2 $mfile"
+	#echo "cat $flist[1] $flist[2] | $mprog $num1 $num2 $mfile"
 	cat $flist[1] $flist[2] | $mprog $num1 $num2 $mfile
 	shift flist
 	shift flist

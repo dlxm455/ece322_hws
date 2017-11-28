@@ -17,6 +17,18 @@ void allocateMatrix(struct my_matrix_struct * mms, int nR, int nC) {
 	}
 }
 
+void freeMatrixData(struct my_matrix_struct * mms) {
+	int nR = mms->numRow;
+	int nC = mms->numCol;
+	int i;
+	for (i = 0; i < nR; i++) {
+		if (mms->ptr_arr[i]) free(mms->ptr_arr[i]);
+		mms->ptr_arr[i] = NULL;
+	}
+	free(mms->ptr_arr);
+	mms->ptr_arr = NULL;
+}
+
 // return 0 if OK, -1 if failed
 int fillMatrixFromStdin(struct my_matrix_struct * mms) {
 	int nR = mms->numRow;
@@ -82,33 +94,41 @@ int main(int argc, char *argv[]) {
 	int p = (int)strtol(argv[3], NULL, 10);
 
 	// allocate spaces for A, B and C
-	struct my_matrix_struct A;
-	struct my_matrix_struct B;
-	struct my_matrix_struct C;
+	struct my_matrix_struct * A = malloc(sizeof(struct my_matrix_struct));
+	struct my_matrix_struct * B = malloc(sizeof(struct my_matrix_struct));
+	struct my_matrix_struct * C = malloc(sizeof(struct my_matrix_struct));
 
-	allocateMatrix(&A, m, n);
-	allocateMatrix(&B, n, p);
-	allocateMatrix(&C, m, p);
+	allocateMatrix(A, m, n);
+	allocateMatrix(B, n, p);
+	allocateMatrix(C, m, p);
 
 	// read in data to A and B
-	int countA = fillMatrixFromStdin(&A);
+	int countA = fillMatrixFromStdin(A);
 	if (countA == -1) {
 		fprintf(stderr, "fill A failed\n");
 		exit(1);
 	}
-	int countB = fillMatrixFromStdin(&B);
+	int countB = fillMatrixFromStdin(B);
 	if (countB == -1) {
 		fprintf(stderr, "fill B failed\n");
 		exit(1);
 	}
 
 	// calculate C
-	int ret_mp = matrixProduct(&C, &A, &B);
+	int ret_mp = matrixProduct(C, A, B);
 	if (ret_mp == -1) {
 		fprintf(stderr, "matrix structure does not match to calculate product\n");
 		exit(1);
 	}
-	printMatrix(&C);
+	printMatrix(C);
+	freeMatrixData(A);
+	freeMatrixData(B);
+	freeMatrixData(C);
+
+	free(A);
+	free(B);
+	free(C);
 
 	return 0;
 }
+
