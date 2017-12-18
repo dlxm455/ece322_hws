@@ -259,7 +259,7 @@ int main(int argc, char * argv[]) {
 	count = 0;
 
 	// send data to merge
-	FILE * s3_FILE = fdopen(s3, "w");
+	FILE * s3_FILE = fdopen(s3, "w+");
 	count = 0;
 	while (count < num_str) {
 		fprintf(s3_FILE, "%s\n", data[count]); // ??? need \n or not
@@ -271,9 +271,12 @@ int main(int argc, char * argv[]) {
 		printf("not all data sent to myMerge service\n");
 		exit(1);
 	}
+	else {
+		printf("sent all data to myMerge service\n");
+	}
 
 	// read sorted strings and write to STDOUT
-	printf("\n merged data: \n");
+	printf("\nmerged data: \n");
 	count = 0;	
 	while (count < num_str) {
 		cc = fscanf(s3_FILE, "%s", str);

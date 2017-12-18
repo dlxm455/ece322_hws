@@ -21,18 +21,26 @@ void free_memories(int num, char ** data) {
 	if (data) free(data);
 }
 
-int readToArr(char ** data, int arr_size, int sock) {
+int readToArr(char ** data, int arr_size, FILE * sock_FILE) {
 	char buf[128];
 	int count = 0;
 	int len;
+	int cc;
 
-	while (count < arr_size && recv(sock, buf, sizeof(buf), 0) >= 0) {
+	while (count < arr_size) {
+		//cc = recv(sock, buf, sizeof(buf), 0);
+		cc = fscanf(sock_FILE, "%s", buf);
+		if (cc < 0) {
+			printf("Error on receiving data\n");
+			exit(1);
+		}
 		len = strlen(buf);
 		data[count] = (char *)malloc(len+1);
 		strcpy(data[count], buf);
 		data[count][len] = '\0';
+		printf("count: %d\n", count);
 		count++;
-		memset(buf, 0, sizeof(buf));
+		//memset(buf, 0, sizeof(buf));
 	}
 	return count;
 }
@@ -112,8 +120,10 @@ int main(int argc, char * argv[]) {
 		data1 = (char **)malloc(sizeof(char *) * num1);
 		data2 = (char **)malloc(sizeof(char *) * num2); 
 
+
+		FILE * ssock_FILE = fdopen(ssock, "w+");
 		// read data from socket to array1
-		count1 = readToArr(data1, num1, ssock);
+		count1 = readToArr(data1, num1, ssock_FILE);
 		if (count1 != num1) {
 			printf("not all data read in array1\n");
 			free_memories(num1, data1);
@@ -122,7 +132,7 @@ int main(int argc, char * argv[]) {
 		}
 
 		// read data from socket to array2
-		count2 = readToArr(data2, num2, ssock);
+		count2 = readToArr(data2, num2, ssock_FILE);
 		if (count2 != num2) {
 			printf("not all data read in array2\n");
 			free_memories(num1, data1);
@@ -131,8 +141,8 @@ int main(int argc, char * argv[]) {
 		}
 
 		// send to socket while merging
-		FILE * ssock_FILE = fdopen(ssock, "w+");
 		count1 = 0;
+		count2 = 0;
 		int i, j;
 		while (count1 < num1 || count2 < num2) {
 			if (count1 == num1) {
@@ -144,8 +154,10 @@ int main(int argc, char * argv[]) {
 							send_err_flag = 1;
 							break;
 						}
+		printf("count2_0: %d\n", count2);
 						count2++;
 					}
+					break;
 			}
 			else if (count2 == num2) {
 				while(count1 < num1) {
@@ -156,26 +168,32 @@ int main(int argc, char * argv[]) {
 						send_err_flag = 1;
 						break;
 					}
+		printf("count1_0: %d\n", count1);
 					count1++;
 				}
+				break;
 			}
 			int cmpRes = strcmp(data1[count1], data2[count2]);
 			if (cmpRes < 0) {
 				//cc = send(ssock, data1[count1], strlen(data1[count1]) + 1, 0);
 				cc = fprintf(ssock_FILE, "%s\n", data1[count1]);
+				fflush(ssock_FILE);
 				if (cc < 0) {
 					send_err_flag = 1;
 					break;
 				}
+		printf("count1: %d\n", count1);
 				count1++;
 			}
 			else {
 				//cc = send(ssock, data2[count2], strlen(data2[count2]) + 1, 0);
 				cc = fprintf(ssock_FILE, "%s\n", data2[count2]);
+				fflush(ssock_FILE);
 				if (cc < 0) {
 					send_err_flag = 1;
 					break;
 				}
+		printf("count2: %d\n", count2);
 				count2++;
 			} 
 		}
