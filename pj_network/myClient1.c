@@ -8,13 +8,24 @@
 #include <netdb.h>
 #include <string.h>
 #include <sys/errno.h>
+#include <unistd.h>
 
 int main(int argc, char * argv[]) {
-	char hn1[], hn2[], hn3[];
+	char hn1[81];
+	char hn2[81];
+	char hn3[81];
 	int p1, p2, p3;
 	int num_str;
 	int c_level = 2;
 	int num_each;
+
+	int count = 0;
+	char str[128];
+	int cc;
+	char ** data;
+	int count_arr;
+	int len;
+
 
 // Configure: (from STDIN)
 	printf("Please enter hostname and port of mySort Service 1:\n");
@@ -60,7 +71,7 @@ int main(int argc, char * argv[]) {
 
 	// configures socket addresses
 	struct hostent *phe;
-	if (phe = gethostbyname(hn1)) {
+	if ((phe = gethostbyname(hn1))) {
 		memcpy(&sin1.sin_addr, phe->h_addr, phe->h_length);
 	}
 	else {
@@ -70,7 +81,7 @@ int main(int argc, char * argv[]) {
 	}
 	sin1.sin_port = htons((unsigned short)p1);
 
-	if (phe = gethostbyname(hn2)) {
+	if ((phe = gethostbyname(hn2))) {
 		memcpy(&sin2.sin_addr, phe->h_addr, phe->h_length);
 	}
 	else {
@@ -80,7 +91,7 @@ int main(int argc, char * argv[]) {
 	}
 	sin2.sin_port = htons((unsigned short)p2);
 
-	if (phe = gethostbyname(hn3)) {
+	if ((phe = gethostbyname(hn3))) {
 		memcpy(&sin3.sin_addr, phe->h_addr, phe->h_length);
 	}
 	else {
@@ -90,6 +101,9 @@ int main(int argc, char * argv[]) {
 	}
 	sin3.sin_port = htons((unsigned short)p3);
 
+	// allocate space for array to save received data
+	data = (char **)malloc(sizeof(char *) * num_str);
+	count_arr = 0;
 // Connect/send/recv data: mySort Service 1
 	if (connect(s1, (struct sockaddr *)&sin1, sizeof(sin1)) < 0) {
 		printf("Cannot connect s1\n");
@@ -97,40 +111,60 @@ int main(int argc, char * argv[]) {
 	}
 
 	// send number of strings 
-	if (send(s1, &num_each, sizeof(int), 0) < 0){
-		printf("Sent number: %d to mySort service 1\n", num_each);
+	if (send(s1, &num_each, sizeof(int), 0) < 0) {
+		printf("Cannot send number: %d to mySort service 1\n", num_each);
 		exit(1);
 	}
+	printf("Send number: %d to mySort service 1\n", num_each);
 
-	int count = 0;
-	char str[128];
 	// send strings to sort
-	FILE * s1_FILE = fdopen(s1, "w");
-	while ((count < num_each) && (scanf("%s", str) == 1)) {
-		fprintf(s1_FILE, "%s\n", str); // ??? need \n or not
+	FILE * s1_FILE = fdopen(s1, "w+");
+	count = 0;
+	while (count < num_each) {
+		cc = scanf("%s", str);
+		if (cc < 0) break;	
+		fprintf(s1_FILE, "%s", str); // ??? need \n or not
 		fflush(s1_FILE);
+		printf("count: %d\n", count);
 		count++;
-	} 
+	}
 
 	if (count != num_each) {
 		printf("not all data sent to mySort service 1\n");
 		exit(1);
 	}
 
+
 	// read sorted strings 
-	FILE * outfile = fopen("network_sort_output", "w");
-	count = 0;	
-	while ((count < num_each) && (fscanf(s1_FILE, "%s", str) == 1)) {
-		fprintf(outfile, "%s\n", str);
+	//FILE * outfile = fopen("network_sort_output", "w");
+
+	count = 0;
+	//fprintf(s1_FILE, "ready to receive sorted data\n");
+	//fflush(s1_FILE);
+
+	while (count < num_each) {
+		cc = fscanf(s1_FILE, "%s", str);
+		if (cc < 0) break;
+		len = strlen(str);
+		data[count_arr] = (char *)malloc(len+1);
+		strcpy(data[count_arr], str);
+		data[count_arr][len] = '\0';
+		//fprintf(outfile, "%s\n", str);
+		//printf("count: %d %s\n", count, str);
 		count++;
+		count_arr++;
 	}
-	
+	printf("receive %d strings\n", count);
+
 	if (count != num_each) {
 		printf("not all data received from mySort service 1\n");
 		exit(1);
 	}
+	else {
+		printf("all data received from mySort service 1\n");
+	}
 
-	fclose(outfile);
+	//fclose(outfile);
 	fclose(s1_FILE);
 	close(s1);
 
@@ -143,40 +177,61 @@ int main(int argc, char * argv[]) {
 
 	// send number of strings 
 	if (send(s2, &num_each, sizeof(int), 0) < 0){
-		printf("Sent number: %d to mySort service 2\n", num_each);
+		printf("Cannot send number: %d to mySort service 2\n", num_each);
 		exit(1);
 	}
+	printf("Send number: %d to mySort service 2\n", num_each);
 
-	count = 0;
 	// send strings to sort
-	FILE * s2_FILE = fdopen(s2, "w");
-	while ((count < num_each) && (scanf("%s", str) == 1)) {
-		fprintf(s2_FILE, "%s\n", str); // ??? need \n or not
+	FILE * s2_FILE = fdopen(s2, "w+");
+	count = 0;
+	while (count < num_each) {
+		cc = scanf("%s", str);
+		if (cc < 0) break;
+		fprintf(s2_FILE, "%s", str); // ??? need \n or not
 		fflush(s2_FILE);
+		printf("count: %d\n", count);
 		count++;
-	} 
+	}
 
 	if (count != num_each) {
 		printf("not all data sent to mySort service 2\n");
 		exit(1);
 	}
 
-	// read sorted strings 
-	FILE * outfile = fopen("network_sort_output", "a");
-	count = 0;	
-	while ((count < num_each) && (fscanf(s2_FILE, "%s", str) == 1)) {
-		fprintf(outfile, "%s\n", str);
+	// read sorted strings
+	// outfile = fopen("network_sort_output", "a");
+	count = 0;
+	//fprintf(s2_FILE, "ready to receive sorted data\n");
+	//fflush(s2_FILE);
+
+	while (count < num_each) {
+		cc = fscanf(s2_FILE, "%s", str);
+		if (cc < 0) break;
+		len = strlen(str);
+		data[count_arr] = (char *)malloc(len+1);
+		strcpy(data[count_arr], str);
+		data[count_arr][len] = '\0';
+		//fprintf(outfile, "%s\n", str);
+		printf("count: %d %s\n", count, str);
 		count++;
+		count_arr++;
 	}
-	
+
+	printf("receive %d strings\n", count);
+
 	if (count != num_each) {
 		printf("not all data received from mySort service 2\n");
 		exit(1);
 	}
+	else {
+		printf("all data received from mySort service 2\n");
+	}
 
-	fclose(outfile);
+	//fclose(outfile);
 	fclose(s2_FILE);
 	close(s2);
+
 
 
 // Connect/send/recv data: myMerge Service
@@ -185,26 +240,32 @@ int main(int argc, char * argv[]) {
 		exit(1);
 	}
 
-	// send number of strings 
+	// send number of strings
 	if (send(s3, &num_each, sizeof(int), 0) < 0){
-		printf("Sent number: %d to myMerge\n", num_each);
+		printf("Cannot send number: %d to myMerge\n", num_each);
 		exit(1);
 	}
-
-	if (send(s3, &num_each, sizeof(int), 0) < 0){
+	else {
 		printf("Sent number: %d to myMerge\n", num_each);
+	}
+	if (send(s3, &num_each, sizeof(int), 0) < 0){
+		printf("Cannot send number: %d to myMerge\n", num_each);
 		exit(1);
+	}
+	else {
+		printf("Sent number: %d to myMerge\n", num_each);
 	}
 
 	count = 0;
 
-	// send data to merge 
+	// send data to merge
 	FILE * s3_FILE = fdopen(s3, "w");
-	while ((count < num_str) && (scanf("%s", str) == 1)) {
-		fprintf(s3_FILE, "%s\n", str); // ??? need \n or not
+	count = 0;
+	while (count < num_str) {
+		fprintf(s3_FILE, "%s\n", data[count]); // ??? need \n or not
 		fflush(s3_FILE);
 		count++;
-	} 
+	}
 
 	if (count != num_str) {
 		printf("not all data sent to myMerge service\n");
@@ -212,8 +273,11 @@ int main(int argc, char * argv[]) {
 	}
 
 	// read sorted strings and write to STDOUT
+	printf("\n merged data: \n");
 	count = 0;	
-	while ((count < num_str) && (fscanf(s3_FILE, "%s", str) == 1)) {
+	while (count < num_str) {
+		cc = fscanf(s3_FILE, "%s", str);
+		if (cc < 0) break;
 		printf("%s\n", str);
 		count++;
 	}
@@ -226,4 +290,12 @@ int main(int argc, char * argv[]) {
 	fclose(s3_FILE);
 	close(s3);
 
+	// free array memories
+	int i;
+	for (i = 0; i < num_str; i++) {
+		if (data[i]) free(data[i]);
+	}
+	if (data) free(data);
+
+	return 0;
 }

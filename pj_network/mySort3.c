@@ -29,8 +29,8 @@ void free_memories(int num, char ** data) {
 int main(int argc, char * argv[]) {
 
 	struct servent *pse;
-	struct sockadrr_in sin;
-	struct sockadrr_in fsin;
+	struct sockaddr_in sin;
+	struct sockaddr_in fsin;
 
 	int s;
 	int ssock;
@@ -43,6 +43,7 @@ int main(int argc, char * argv[]) {
 	char ** data;
 	char buf[128];
 	int len;
+	FILE * ssock_FILE;
 
 	// set up socket address
 	memset(&sin, 0, sizeof(sin));
@@ -110,11 +111,14 @@ int main(int argc, char * argv[]) {
 		}
 
 		// quick sort
-		qsort(data, arr_size, sizeof(char*), cmpfunc);
+		qsort(data, sort_num, sizeof(char*), cmpfunc);
 
+		ssock_FILE = fdopen(ssock, "w+");
 		// write sorted data from array to socket
-		for (count = 0; count < arr_size; count++) {
-			cc = send(ssock, data[count], strlen(data[count]) + 1, 0);
+		for (count = 0; count < sort_num; count++) {
+			//cc = send(ssock, data[count], strlen(data[count]) + 1, 0);
+			cc = fprintf(ssock_FILE, "%s\n", data[count]);
+			fflush(ssock_FILE);
 			if (cc < 0) {
 				printf("Error on write to socket\n");
 				free_memories(sort_num, data);
@@ -131,6 +135,7 @@ int main(int argc, char * argv[]) {
 	}
 
 	printf("Sorting service is closing\n");
+	fclose(ssock_FILE);
 	close(s);
 	return 0;
 }
